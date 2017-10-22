@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE muclient>
+<!-- Saved on Sunday, April 09, 2017, 11:32 AM -->
+<!-- MuClient version 5.04 -->
+<muclient>
+<plugin
+   name="XPTimer"
+   author="Ruhsbaar"
+   id="2cc9f421b4a4a393d32e9cfe"
+   language="Lua"
+   purpose="Measure time since last visit to XP Hotspots in DiscworldMUD."
+   date_written="2017-04-09 11:30:16"
+   requires="5.04"
+   version="1.0"
+   >
+
+</plugin>
+
+<include name="constants.lua"/>
+<aliases>
+  <alias
+   enabled="y"
+   match="^deathtimers$"
+   regexp="y"
+   script="DeathTimers"
+   sequence="100"
+  ></alias>
+  <alias
+    enabled="y"
+    match="^dt$"
+    regexp="y"
+    script="DeathTimers"
+    sequence="100"
+  ></alias>
+  <alias
+    enabled="y"
+    match="^dtsync (?<target>\w+)$"
+    regexp="y"
+    script="SyncSend"
+    sequence="100"
+  ></alias>
+  <alias
+    enabled="y"
+    match="^dtreset (?<target>\w+)$"
+    regexp="y"
+    script="SpotReset"
+    sequence="100"
+  ></alias>
+  <alias
+    enabled="y"
+    match="gsdt"
+    regexp="y"
+    script="GroupSend"
+    sequence="100"
+  ></alias>
+</aliases>
+<triggers>
+    <trigger
+        enabled="y"
+        keep_evaluating="n"
+        match="^(?P<killer>[- 'A-Za-z]+) deals the death blow to\s(?P<victim>.+)\.$"
+        regexp="y"
+        script="DeathBlowHandler"
+        name="OtherDeathBlowHandler"
+        sequence="100"
+    ></trigger>
+    <trigger
+        enabled="y"
+        keep_evaluating="n"
+        match="^(?P<killer>You) kill\s(?P<victim>.+)\.$"
+        regexp="y"
+        script="DeathBlowHandler"
+        name="YouDeathBlowHandler"
+        sequence="100"
+    ></trigger>
+    <trigger
+        enabled="y"
+        keep_evaluating="n"
+        match="^(?P<syncer>[\w ]+) tells you: ruhs_dtsync=\[(?P<numbers>[\d.,]+)\]$"
+        regexp="y"
+        omit_from_output="y"
+        script="SyncReceiveDeath"
+        name="SyncTriggerDeath"
+        sequence="100"
+    ></trigger>
+    <trigger
+        enabled="y"
+        keep_evaluating="n"
+        match="^(?P<syncer>[\w ]+) tells you: ruhs_vtsync=\[(?P<numbers>[\d.,]+)\]$"
+        regexp="y"
+        omit_from_output="y"
+        script="SyncReceiveVisit"
+        name="SyncTriggerVisit"
+        sequence="100"
+    ></trigger>
+</triggers>
+
+<script>
+<![CDATA[
+-- Utils
+function initSpot(name, display)
+    local spot = {
+        ["time"] = 0,
+        ["name"] = name,
+        ["display"] = display
+    }
+    return spot
+end
+
+
+
+-- Data
+last_room = {
+    ["name"] = "",
+    ["identifier"] = ""
+}
+
+kill_timers = {
+    [0] = initSpot("Delbert", "delbert"),
+    [1] = initSpot("the Triad boss", "medina boss"),
+    [2] = initSpot("the bandit leader", "bandit leader"),
+    [3] = initSpot("Hlakket the Bartender", "hlakket"),
+    [4] = initSpot("the Zoon Liar", "zoon liar"),
+    [5] = initSpot("Slim Stevie", "rogues"),
+    [6] = initSpot("the smuggler captain", "smuggler captain"),
+    [7] = initSpot("the ceremonial guard", "cguards"),
+    [8] = initSpot("the %l+ %l+ lion", "shaker lions"),
+    [9] = initSpot("the %l+ student", "dojo"),
+    [10] = initSpot("the %l+ grflx worker", "grflx worker")
+}
+
+visit_timers = {
+    -- shades maze entrance
+    [0] = initSpot("01bbd8b887e71314d8e358cbaf4f585391206bc4", "shades"),
+    -- smugglers cove entrance
+    [1] = initSpot("ebff897af2b8bb6800a9a8636143099d0714be07", "smugglers"),
+    -- casino, Gumoni's room
+    [2] = initSpot("11f3c9c2ccc3c66cdcaaad2a44854531275ccc52", "casino"),
+    -- second floor kitchen, salt shaker
+    [3] = initSpot("cb8aaf1cc79bb5e8977a6d0124791dd116eef443", "shaker")
+}
+
+
+
+-- XPTimer
+function DeathBlowHandler(name, line, wildcards)
+    local killer = wildcards.killer
+    local victim = wildcards.victim
+    -- Note("[Killer: " .. killer .. " | Victim: " .. victim .. "]")
+
+    for k,v in pairs(kill_timers) do
+        if string.match(victim, v["name"]) then
+            v["time"] = GetInfo(232)
+        end
+    end
+end
+
+function OnPluginBroadcast(msg, id, name, text)
+  regex = '^room.info {%"identifier%":%"(%x+)%",%"name%":%"(.+)%",%"visibility%":%d,%"kind%":%"%w+%"}$'
+  identifier, roomname = string.match(text, regex)
+
+  if(identifier) then
+    -- Record the last room we were in
+    last_room["name"] = roomname
+    last_room["identifier"] = identifier
+
+    -- Check it against our saved vnums
+    for k,v in pairs(visit_timers) do
+        if v["name"] == identifier then
+            v["time"] = GetInfo(232)
+        end
+    end
+  end
+end
+
+function SpotReset(name, line, wildcards)
+    for k,v in pairs(kill_timers) do
+        if v["display"] == wildcards.target then
+            v["time"] = GetInfo(232)
+        end
+    end
+    for k,v in pairs(visit_timers) do
+        if v["display"] == wildcards.target then
+            v["time"] = GetInfo(232)
+        end
+    end
+end
+
+
+
+-- Output
+function DeathTimers()
+    local print_order = {}
+    local vprint_order = {}
+    local current_time = GetInfo(232)
+    local difference = GetInfo(232)
+
+    for order,spot in pairs(kill_timers) do table.insert(print_order, order) end
+    for order,spot in pairs(visit_timers) do table.insert(vprint_order, order) end
+    table.sort(print_order)
+    table.sort(vprint_order)
+
+    Note(".:: Death Timers ::.")
+    for iter,ord in ipairs(print_order) do
+        if kill_timers[ord]["time"] == 0 then
+            Note(" - (Unseen)\t" .. kill_timers[ord]["display"])
+        else
+            difference = math.floor((current_time - kill_timers[ord]["time"]) + 0.5)
+            local mins = math.floor(difference/60)
+            local secs = difference % 60
+            Note(" - (" .. mins .. "m" .. secs .. "s)\t" .. kill_timers[ord]["display"])
+        end
+    end
+    Note("\n.:: Visit Timers ::.")
+    for iter,ord in ipairs(vprint_order) do
+        if visit_timers[ord]["time"] == 0 then
+            Note(" - (Unseen)\t" .. visit_timers[ord]["display"])
+        else
+            difference = math.floor((current_time - visit_timers[ord]["time"]) + 0.5)
+            local mins = math.floor(difference/60)
+            local secs = difference % 60
+            Note(" - (" .. mins .. "m" .. secs .. "s)\t" .. visit_timers[ord]["display"])
+        end
+    end
+end
+
+function GroupSend(name, line, wildcards)
+    local print_order = {}
+    local vprint_order = {}
+    local current_time = GetInfo(232)
+    local difference = GetInfo(232)
+
+    for order,spot in pairs(kill_timers) do table.insert(print_order, order) end
+    for order,spot in pairs(visit_timers) do table.insert(vprint_order, order) end
+    table.sort(print_order)
+    table.sort(vprint_order)
+
+    local dtsync = "Death: "
+    local vtsync = "Visit: "
+
+    -- List out death timers
+    for iter,ord in ipairs(print_order) do
+        if kill_timers[ord]["time"] == 0 then
+            dtsync = dtsync .. kill_timers[ord]["display"] .. ": Unseen | "
+        else
+            difference = math.floor((current_time - kill_timers[ord]["time"]) + 0.5)
+            local mins = math.floor(difference/60)
+            local secs = difference % 60
+            dtsync = dtsync .. kill_timers[ord]["display"] .. ": " .. mins .. "m" .. secs .. "s | "
+        end
+    end
+    dtsync = dtsync:sub(1, dtsync:len()-2)
+
+    -- List out visit timers
+    for iter,ord in ipairs(vprint_order) do
+        if visit_timers[ord]["time"] == 0 then
+            vtsync = vtsync .. visit_timers[ord]["display"] .. ": Unseen | "
+        else
+            difference = math.floor((current_time - visit_timers[ord]["time"]) + 0.5)
+            local mins = math.floor(difference/60)
+            local secs = difference % 60
+            vtsync = vtsync .. visit_timers[ord]["display"] .. ": " .. mins .. "m" .. secs .. "s | "
+        end
+    end
+    vtsync = vtsync:sub(1, vtsync:len()-2)
+
+    Send("group say " .. dtsync .. " | " .. vtsync)
+end
+
+function SyncSend(name, line, wildcards)
+    local print_order = {}
+    local vprint_order = {}
+
+    for order,spot in pairs(kill_timers) do table.insert(print_order, order) end
+    for order,spot in pairs(visit_timers) do table.insert(vprint_order, order) end
+    table.sort(print_order)
+    table.sort(vprint_order)
+
+    local dtsync = "ruhs_dtsync=["
+    local vtsync = "ruhs_vtsync=["
+
+    -- List out death timers
+    for iter,ord in ipairs(print_order) do
+        dtsync = dtsync .. kill_timers[ord]["time"] .. ","
+    end
+    dtsync = dtsync:sub(1, dtsync:len()-1) .. "]"
+
+    -- List out visit timers
+    for iter,ord in ipairs(vprint_order) do
+        vtsync = vtsync .. visit_timers[ord]["time"] .. ","
+    end
+    vtsync = vtsync:sub(1, vtsync:len()-1) .. "]"
+
+    Send("brief queue")
+    Send("tell " .. wildcards(1) .. " " .. dtsync)
+    Send("tell " .. wildcards(1) .. " " .. vtsync)
+    Send("frimble " .. wildcards.target .. " tells you: " .. dtsync)
+    Send("frimble " .. wildcards.target .. " tells you: " .. vtsync)
+    Send("verbose queue")
+end
+
+
+
+-- Sync Triggers
+function SyncReceiveDeath(name, line, wildcards)
+    local sync_count = 0
+    for num in string.gmatch(wildcards.numbers, "[%d.]+") do
+        Note("Syncing " .. kill_timers[sync_count]["display"] .. " to " .. num)
+        kill_timers[sync_count]["time"] = tonumber(num)
+        sync_count = sync_count + 1
+    end
+end
+
+function SyncReceiveVisit(name, line, wildcards)
+    local sync_count = 0
+    for num in string.gmatch(wildcards.numbers, "[%d.]+") do
+        Note("Syncing " .. visit_timers[sync_count]["display"] .. " to " .. num)
+        visit_timers[sync_count]["time"] = tonumber(num)
+        sync_count = sync_count + 1
+    end
+end
+
+]]>
+</script>
+</muclient>
