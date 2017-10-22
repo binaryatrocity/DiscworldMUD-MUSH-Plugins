@@ -13,7 +13,6 @@
    requires="5.04"
    version="1.0"
    >
-
 </plugin>
 
 <include name="constants.lua"/>
@@ -51,6 +50,20 @@
     match="gsdt"
     regexp="y"
     script="GroupSend"
+    sequence="100"
+  ></alias>
+  <alias
+    enabled="y"
+    match="dtdebug"
+    regexp="y"
+    script="DebugToggle"
+    sequence="100"
+  ></alias>
+  <alias
+    enabled="y"
+    match="help deathtimer"
+    regexp="y"
+    script="HelpFile"
     sequence="100"
   ></alias>
 </aliases>
@@ -110,6 +123,8 @@ end
 
 
 -- Data
+debug_flag = False
+
 last_room = {
     ["name"] = "",
     ["identifier"] = ""
@@ -137,16 +152,25 @@ visit_timers = {
     -- casino, Gumoni's room
     [2] = initSpot("11f3c9c2ccc3c66cdcaaad2a44854531275ccc52", "casino"),
     -- second floor kitchen, salt shaker
-    [3] = initSpot("cb8aaf1cc79bb5e8977a6d0124791dd116eef443", "shaker")
+    [3] = initSpot("cb8aaf1cc79bb5e8977a6d0124791dd116eef443", "shaker"),
+    -- offler crocodile pond
+    [4] = initSpot("70546ec71867645ab5c51e9ce6087b75dcf4176f", "offler")
 }
 
 
 
 -- XPTimer
+function DebugToggle(name, line, wildcards)
+    debug_flag = not debug_flag
+    Note("[XPTimer] Debug flag toggled to " .. tostring(debug_flag))
+end
+
 function DeathBlowHandler(name, line, wildcards)
     local killer = wildcards.killer
     local victim = wildcards.victim
-    -- Note("[Killer: " .. killer .. " | Victim: " .. victim .. "]")
+    if debug_flag then
+        Note("[XPTimer] Killer: " .. killer .. " | Victim: " .. victim)
+    end
 
     for k,v in pairs(kill_timers) do
         if string.match(victim, v["name"]) then
@@ -163,6 +187,10 @@ function OnPluginBroadcast(msg, id, name, text)
     -- Record the last room we were in
     last_room["name"] = roomname
     last_room["identifier"] = identifier
+
+    if debug_flag then
+        Note("[XPTimer] Room Name: \"" .. roomname .. "\" Identifier: \"" .. identifier .. "\"")
+    end
 
     -- Check it against our saved vnums
     for k,v in pairs(visit_timers) do
@@ -292,10 +320,13 @@ function SyncSend(name, line, wildcards)
     vtsync = vtsync:sub(1, vtsync:len()-1) .. "]"
 
     Send("brief queue")
-    Send("tell " .. wildcards(1) .. " " .. dtsync)
-    Send("tell " .. wildcards(1) .. " " .. vtsync)
-    Send("frimble " .. wildcards.target .. " tells you: " .. dtsync)
-    Send("frimble " .. wildcards.target .. " tells you: " .. vtsync)
+    Send("tell " .. wildcards[1] .. " " .. dtsync)
+    Send("tell " .. wildcards[1] .. " " .. vtsync)
+
+    if debug_flag then
+        Send("frimble " .. wildcards.target .. " tells you: " .. dtsync)
+        Send("frimble " .. wildcards.target .. " tells you: " .. vtsync)
+    end
     Send("verbose queue")
 end
 
@@ -305,7 +336,9 @@ end
 function SyncReceiveDeath(name, line, wildcards)
     local sync_count = 0
     for num in string.gmatch(wildcards.numbers, "[%d.]+") do
-        Note("Syncing " .. kill_timers[sync_count]["display"] .. " to " .. num)
+        if debug_flag then
+            Note("[XPTimer] Syncing " .. kill_timers[sync_count]["display"] .. " to " .. num)
+        end
         kill_timers[sync_count]["time"] = tonumber(num)
         sync_count = sync_count + 1
     end
@@ -314,10 +347,20 @@ end
 function SyncReceiveVisit(name, line, wildcards)
     local sync_count = 0
     for num in string.gmatch(wildcards.numbers, "[%d.]+") do
-        Note("Syncing " .. visit_timers[sync_count]["display"] .. " to " .. num)
+        if debug_flag then
+            Note("[XPTimer] Syncing " .. visit_timers[sync_count]["display"] .. " to " .. num)
+        end
         visit_timers[sync_count]["time"] = tonumber(num)
         sync_count = sync_count + 1
     end
+end
+
+function HelpFile(name, line, wildcards)
+    Note("XP Hotspot Timer by Ruhsbaar")
+    Note("'dt' or 'deathtimers': display a list of XP hotspot timers")
+    Note("'gsdt': share the list over group chat")
+    Note("'dtreset <target>': reset the target XP hotspot timer to zero")
+    Note("'dtsync <player>': sync your timers to another player using the plugin")
 end
 
 ]]>
