@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE muclient>
+<muclient>
+    <plugin
+        name="DeadLetter"
+        author="Ruhsbaar"
+        language="Lua"
+        purpose="Identify the target of Dead Letter missions"
+        date_written="2017-05-29"
+        date_modified="2017-05-29"
+        save_state="n"
+        version="0.1"
+        id="77541a5fdc7c032524fb75d6"
+        >
+    </plugin>
+    <aliases>
+        <alias
+            match="solveletter"
+            enabled="y"
+            ignore_case="y"
+            sequence="30"
+            script="DeadLetterSolver"
+        ></alias>
+        <alias
+            match="sl"
+            enabled="y"
+            ignore_case="y"
+            sequence="30"
+            script="DeadLetterSolver"
+        ></alias>
+    </aliases>
+    <script>
+        <![CDATA[
+difficult_customer = {
+ ["Triad Boss"] = {"Triad Boss", "Bes Pelargic, Medina" },
+ ["The Grflx"] = {"The Grflx", "Skund Forest, Large cavern" },
+ ["Vyrt"] = {"Vyrt", "Ephebe" },
+ ["Avalanche Preventore"] = {"Avalanche Preventore", "Endless Halls (say 'Endless Halls' to Hermal of Sandelfon)" },
+ ["The Librarian"] = {"The Librarian", "Starts in the Unseen University, wanders (in L-space)" },
+ ["Smuggler captain"] = {"Smuggler captain", "Ephebe underground" },
+ ["Queen Shelox"] = {"Queen Shelox", "Gloomy Forest" },
+ ["The Clown (Ha'pennywise)"] = {"The Clown (Ha'pennywise)", "Genua Sewers" },
+ ["Ice giants"] = {"Ice giants", "The Hub" },
+ ["T-shop proprietor"] = {"T-shop proprietor", "The Travelling shop" },
+ ["Bug"] = {"Bug", "Ramtops" },
+ ["Thursday"] = {"Thursday", "A Deserted Island (Thursday's Island)" },
+ ["Hotan Hwoar Ni"] = {"Hotan Hwoar Ni", "Bes Pelargic, Sum Bing, The Snail, Hotan Hwoar Ni's Rare Armours" },
+ ["Security guards"] = {"Security guards", "Bes Pelargic, First Imperial Bank " },
+}
+
+distant_land = {
+ ["Boy Willie"] = {"Boy [Willie]","Bes Pelargic, The Agatean Empire"  },
+ ["Disembowel-Meself-Honourably Dibhala"] = {"Disembowel-Meself-Honourably [Dibhala]","Bes Pelargic"  },
+ ["Glod-san"] = {"[Glod-san]","Bes Pelargic"  },
+ ["Laggy-san"] = {"[Laggy-san]","Bes Pelargic, The Agatean Empire"  },
+ ["Lon Fah Lo"] = {"Lon Fah [Lo]","Bes Pelargic"  },
+ ["Mad Hamish"] = {"Mad [Hamish]","Bes Pelargic (always in the red triangle)"  },
+ ["No Go Wan"] = {"No Go [Wan]","Bes Pelargic, usually in west half of city"  },
+ ["Quisoda"] = {"[Quisoda]","Bes Pelargic"  },
+ ["Ruto of Fish"] = {"[Ruto] of Fish","Bes Pelargic, underwater in a shipwreck"  },
+ ["Ryattenoki"] = {"[Ryattenoki]","Bes Pelargic"  },
+ ["Shi Do Gai"] = {"Shi Do [Gai]","Bes Pelargic, usually in Tuna Walk"  },
+ ["Lap-lip"] = {"[Lap-lip]","Djelibeybi"  },
+ ["Lip-phon Lap-top"] = {"Lip-phon [Lap-top]","Djelibeybi"  },
+ ["Mihk-gran-bohp"] = {"Mihk-gran-[bohp]","Djelibeybi"  },
+ ["Phos-phor"] = {"[Phos]-phor","Djelibeybi (moves around very quickly)"  },
+ ["Very Reverend Khepresh"] = {"Very Reverend [Khepresh]","Djelibeybi (but likely to be found elsewhere with other players)"  },
+ ["Yclept"] = {"[Yclept]","Djelibeybi (in the park)"  },
+ ["Tuffy"] = {"[Tuffy]","Escrow"  },
+ ["Casanunda"] = {"[Casanunda]","Genua"  },
+ ["Greig Schwitz"] = {"Greig [Schwitz]","Genua"  },
+ ["Noobie"] = {"[Noobie]","Genua"  },
+ ["Tfat Chick"] = {"Tfat [Chick]","Genua (but cannot be scried if chicks have spawned)"  },
+ ["Cut Me Own Hand Off Dhblah (Mr CMOHO Dhblah)"] = {"Cut Me Own Hand Off [Dhblah] (Mr CMOHO Dhblah)","Oasis"  },
+ ["Miss Pennie Laced"] = {"Miss Pennie [Laced]","Ohulan Cutash"  },
+ ["Berti Boggis"] = {"[Berti] Boggis","Skund Forest, Pekan Ford"  },
+ ["The Proprietor"] = {"The Proprietor","A ferry shop, Counterweight Continent (Bes Pelargic, Tuna Walk / Brown Islands)"  }
+}
+
+far_away = {
+ ["Cern Smith"] = {"Cern Smith","Bad Ass"  },
+ ["Granny Weatherwax"] = {"Granny Weatherwax","Bad Ass (Witches' Guild)"  },
+ ["Gulta Smith"] = {"Gulta Smith","Bad Ass"  },
+ ["Hanlo Shepston"] = {"Hanlo Shepston","Bad Ass, The Forge"  },
+ ["Jaims Smith"] = {"[Jaims] Smith","Bad Ass"  },
+ ["Kev Ogg / Mr. Ogg"] = {"Kev Ogg / Mr. Ogg","Bad Ass, Forge"  },
+ ["Martha Headlock"] = {"Martha Headlock","Bad Ass"  },
+ ["Mrs Smith"] = {"Mrs Smith","Bad Ass"  },
+ ["Cohen the Barbarian"] = {"Cohen the Barbarian","Barbarian camp"  },
+ ["Allen Kingfisher"] = {"Allen Kingfisher","Ramtops, Blackglass, Blackglass smithy"  },
+ ["Morchella Esculenta"] = {"Morchella Esculenta","Blackglass, Undead Defence Shop"  },
+ ["Emile"] = {"Emile","Bois, pub"  },
+ ["Fern Golly"] = {"Fern Golly","Brass Neck, Brightly coloured (toy) stall"  },
+ ["Granville"] = {"Granville","Brass Neck, Village Shop"  },
+ ["Virgo Vango"] = {"Virgo Vango","Brass Neck (Portrait Shop)"  },
+ ["The Proprietor"] = {"The Proprietor","Brown Islands, Souvenir Shop"  },
+ ["Scuttle Me Own Canoe Dihbl / SMOC Dihbl"] = {"Scuttle Me Own Canoe Dihbl / SMOC Dihbl","Calh-Nhad"  },
+ ["Dia Shale"] = {"Dia Shale","Creel Springs"  },
+ ["Esther Elderbury"] = {"Esther Elderbury","Creel Springs"  },
+ ["DEATH"] = {"DEATH","Death's realm"  },
+ ["Dil the Embalmer"] = {"Dil the Embalmer","Djelibeybi, Embalmers' guild"  },
+ ["Khip-en-dahl"] = {"Khip-en-dahl","Djelibeybi, Queen Ptraci furniture shop"  },
+ ["Master Bibh-Lat"] = {"Master Bibh-Lat","Djelibeybi, Phoenix Road, Silversmith"  },
+ ["Merk"] = {"Merk","Djelibeybi, Phoenix Road, Merk's Mephit Messengers"  },
+ ["Ptep-ptip-ptop"] = {"Ptep-ptip-ptop","Djelibeybi, Pottery shop, Tsort Road"  },
+ ["Ptik-ptak-ptoe"] = {"Ptik-ptak-ptoe","Djelibeybi, Hourglass shop"  },
+ ["Pugh Alighieri"] = {"Pugh Alighieri","Djelibeybi, Sickle Street, Alcohol shop"  },
+ ["Teh-takk-eht"] = {"Teh-takk-eht","Djelibeybi, Temple street"  },
+ ["Toohumi"] = {"Toohumi","Djelibeybi, Market Street, Toohumi's Illuminations"  },
+ ["Ug Ogg"] = {"Ug Ogg","Djelibeybi, Guards"  },
+ ["Wan-tew-iit"] = {"Wan-tew-iit","Djelibeybi, barracks' kitchen"  },
+ ["Arms trader"] = {"Arms trader","Djelibeybi Harbour"  },
+ ["Awaiting-Rain"] = {"Awaiting-Rain","Djelibeybi Harbour"  },
+ ["Captain Ptargos"] = {"Captain Ptargos","Djelibeybi Harbour, Brazen Mermaid"  },
+ ["Fis'n-tsips"] = {"Fis'n-tsips","Djelibeybi Harbour, Happy Melon Inn"  },
+ ["Abraxas"] = {"Abraxas","Ephebe, Rational Street"  },
+ ["Ania"] = {"Ania","Ephebe, Logical Lane, the Flaming Ram's Skull Club"  },
+ ["Arimasticopoulous the Mosaicist"] = {"Arimasticopoulous the Mosaicist","Ephebe, Rational Street Alleyway"  },
+ ["Aurinax"] = {"Aurinax","Ephebe, Antithesis lane, jewellery repair shop"  },
+ ["Betty"] = {"Betty","Ephebe, Morporkian Tearoom (tea shop close to the Bing bank)"  },
+ ["Endos the Listener"] = {"Endos the Listener","Ephebe, Antithesis Lane"  },
+ ["Kakia"] = {"Kakia","Ephebe, Logical Lane, the Flaming Ram's Skull Club"  },
+ ["Klepton"] = {"Klepton","Ephebe, Ponder Alley"  },
+ ["Maintenance man"] = {"Maintenance man","Ephebe, Citadel"  },
+ ["Master Zosimos"] = {"Master Zosimos","Ephebe, Paradox Avenue, A murky little shop"  },
+ ["Rimasticopoulous the Mosaicist"] = {"Rimasticopoulous the Mosaicist","Ephebe, Rational Street Alleyway"  },
+ ["Souvlakios"] = {"Souvlakios","Ephebe, Tuvelpit Road"  },
+ ["The owner"] = {"The owner","Ephebe, Market Taverna"  },
+ ["Xenophobios"] = {"Xenophobios","Ephebe, Logical Lane, Amaryllis' Taverna"  },
+ ["Clara"] = {"Clara","Escrow, chandelers' shop"  },
+ ["Ema Nymton"] = {"Ema Nymton","Escrow, fair"  },
+ ["Ivor von Kaeyya"] = {"Ivor von Kaeyya","Escrow, The Count's Seat, Briar Way"  },
+ ["SMOH Dybbler"] = {"SMOH Dybbler","Escrow, Mother Dybbler Potion Shop"  },
+ ["Trau Mirnicht"] = {"Trau Mirnicht","Escrow, fair"  },
+ ["Verkauft Keinfleisch"] = {"Verkauft Keinfleisch","Escrow, The Meat Pie Shoppe, Garlic Way"  },
+ ["A generic Charre Bux employee"] = {"A generic Charre Bux employee","Genua, Charre Bux Coffee House"  },
+ ["Ayna"] = {"Ayna","Genua, The Magick Boxe"  },
+ ["Blloddwyn"] = {"Blloddwyn","Genua, 'Y Crochan Ddu' Tavern"  },
+ ["Brittnee"] = {"Brittnee","Genua, Savannah Road"  },
+ ["Captain Merreaux Vingian"] = {"Captain Merreaux Vingian","Genua, Musketeers"  },
+ ["Cogsworth"] = {"Cogsworth","Genua, Cogsworth's Clocks"  },
+ ["David Leatherman"] = {"David Leatherman","Genua, Marketplace"  },
+ ["Edna Scum"] = {"Edna Scum","Genua, Pirate Avenue, Scum Bar"  },
+ ["Fredd S'Vage"] = {"Fredd S'Vage","Genua, Calypso Street, The Baron's Hand"  },
+ ["Harbour Master"] = {"Harbour Master","Genua, Office near docks"  },
+ ["Harbour mistress"] = {"Harbour mistress","Genua, underground docks"  },
+ ["Hotel Reception"] = {"Hotel Reception","Genua, Hotel"  },
+ ["Jolly Roger"] = {"Jolly Roger","Genua, Pirate Avenue, pirate shop"  },
+ ["Mamie Olivia"] = {"Mamie Olivia","Genua, Dead Man's Walk"  },
+ ["Mr Ray"] = {"Mr Ray","Genua, Tacticus Academy"  },
+ ["Mr Myrtle"] = {"Mr Myrtle","Genua, Silver Bells Silversmiths"  },
+ ["Myrtle"] = {"Myrtle","Genua, Silver Bells Silversmiths"  },
+ ["Mrs Gogol"] = {"Mrs Gogol","Genua, Marketplace"  },
+ ["Sno-ball vendor"] = {"Sno-ball vendor","Genua, Lovers' Walk"  },
+ ["Spritz Peltanque"] = {"Spritz Peltanque","Genua, The Resting Zombie"  },
+ ["Talula"] = {"Talula","Genua, Talula's Tintillating Toys ([sic] shop is actually called Talula's Titillating Toys)"  },
+ ["The shopkeeper"] = {"The shopkeeper","Genua, Chandlery in Genua Avenue"  },
+ ["The tipster (Henry 'show me the money' DeVaughn, Louis 'brace yourself' Guidice, Michael 'the moose' Casella)"] =  {"The tipster (Henry 'show me the money' DeVaughn, Louis 'brace yourself' Guidice, Michael 'the moose' Casella)","Genua, Lady Brook Street, racecourse, grimy bar"  },
+ ["Thom Cru'ez"] = {"Thom Cru'ez","Genua, Barracks"  },
+ ["Watch clerk"] = {"Watch clerk","Genua, Watch House"  },
+ ["Wounded soldier"] = {"Wounded soldier","Genua, Barracks"  },
+ ["Private Inside Leg"] = {"Private Inside Leg","Klatchian Foreign Legion outpost storage tent"  },
+ ["Bestiality Carter"] = {"Bestiality Carter","Lancre Town"  },
+ ["Brother Turbil"] = {"Brother Turbil","Lancre Town, lodging house"  },
+ ["Embezile Thatcher"] = {"Embezile Thatcher","Lancre Town, Lancrastian Farmers' Cooperative Bank"  },
+ ["J. Ogg"] = {"J. Ogg","Lancre Town, forge"  },
+ ["giant leader"] = {"giant leader","land of the giants"  },
+ ["Len"] = {"Len","Mad Stoat, Looney Len's Pottery Shop"  },
+ ["Maggie"] = {"Maggie","Mad Stoat (beside pond)"  },
+ ["Nicholas Winston"] = {"Nicholas Winston","Mad Stoat, Winston Puppets"  },
+ ["Serb Unglish"] = {"Serb Unglish","Mad Stoat"  },
+ ["Sharn Unglish"] = {"Sharn Unglish","Mad Stoat"  },
+ ["Our Wullie"] = {"Our Wullie","Mad Wolf, The Hunter's Head"  },
+ ["Stephan"] = {"Stephan","Mad Wolf, Mad Wolf Furriers"  },
+ ["Young Steven"] = {"Young Steven","Mad Wolf, The Hunter's Head"  },
+ ["Suhm-wil-deih"] = {"Suhm-wil-deih","Oasis, Fig Stall (tent in the southwest part of the Oasis)"  },
+ ["Vic"] = {"Vic","Ohulan Cutash, Vic's tannery"  },
+ ["Twoflower the tourist"] = {"Twoflower the tourist","Ohulan-Cutash, Fiddler's Riddle"  },
+ ["My poor kidnapped daughter (Beautiful female captive)"] = {"My poor kidnapped daughter (Beautiful female captive)","Ramtops, Bandit camp (very dangerous)"  },
+ ["Abbot Lobsang"] = {"Abbot Lobsang","Ramtops, Listening Monks Temple"  },
+ ["Brother Asap"] = {"Brother Asap","Ramtops, Monks of Cool temple (can be Cool Monks)"  },
+ ["Brother Hotpot"] = {"Brother Hotpot","Ramtops, Listening Monks Temple"  },
+ ["Sister Bi-Bi Effenne"] = {"Sister Bi-Bi Effenne","Ramtops, Monks of Cool temple (can be Cool Monks)"  },
+ ["Sister Ti-Ti Effenne"] = {"Sister Ti-Ti Effenne","Ramtops, Monks of Cool temple (can be Cool Monks)"  },
+ ["Heinz Blauhimmel"] = {"Heinz Blauhimmel","Razorback, village shop"  },
+ ["Lichtenstein"] = {"Lichtenstein","Razorback, The Inn"  },
+ ["Mad Gammer Nudity"] = {"Mad Gammer Nudity","Razorback"  },
+ ["Candice Little"] = {"Candice Little","Slice, Quilter shop"  },
+ ["Cleetus Patterson"] = {"Cleetus Patterson","Slice, Cleetus Patterson's Diuerse Supplies"  },
+ ["Granma Muckloe"] = {"Granma Muckloe","Slice"  },
+ ["Peggy Little"] = {"Peggy Little","Slice"  },
+ ["Ann Celeria"] = {"Ann Celeria","Slippery Hollow"  },
+ ["Honest Dachshund (Frank Doberman)"] = {"Honest Dachshund (Frank Doberman)","Slippery Hollow, Moon Under Water Tavern"  },
+ ["Mr Smith (Mr Shopkeeper)"] = {"Mr Smith (Mr Shopkeeper)","Slippery Hollow, Tannery Supply Shop"  },
+ ["Mrs Van Carrot"] = {"Mrs Van Carrot","Slippery Hollow"  },
+ ["One and Only Manclef"] = {"One and Only Manclef","Slippery Hollow"  },
+ ["Young Bran"] = {"Young Bran","Slippery Hollow"  },
+ ["A maitre d'"] = {"A maitre d'","Sto Lat, The Hammered Cat"  },
+ ["Fleppo"] = {"Fleppo","Sto Lat, Bathrobe Shop"  },
+ ["Isobel Kingdom"] = {"Isobel Kingdom","Sto Lat, Academy of Artificers"  },
+ ["71-hour Ahmed"] = {"71-hour Ahmed","Tacticum (get El Kinte Caravan from Djelibeybi)"  },
+ ["Temple Guardian"] = {"Temple Guardian","Temple of Soyin"  },
+ ["Fione mac Feegle"] = {"Fione mac Feegle","Uberwald (Pictsie Barrows)"  },
+ ["Abe"] = {"Abe","Unnamed town, graveyard, Uberwald"  },
+ ["Innkeeper"] = {"Innkeeper","Unnamed town, Uberwald"  },
+ ["Spiegal"] = {"Spiegal","Unnamed town, Ye Olde Weapons Shoppe, Uberwald"  }
+}
+
+letter_type = ""
+letter_pattern = {}
+
+function DeadLetterSetName(sName, sLine, wildcards)
+   username = wildcards.name 
+end
+
+function DeadLetterSolver(sName, sLine, wildcards)
+    letter_pattern = {}
+    EnableTrigger("DeadLetterCaptureStart", true)
+    EnableTrigger("DeadLetterCaptureEnd", true)
+    EnableTrigger("DeadLetterCaptureError", true)
+    Send("read letter")
+end
+
+function DeadLetterParse(sName, sLine, wildcards)
+    if(string.match(wildcards.line, "_")) then
+        table.insert(letter_pattern, wildcards.line)
+    end
+end
+
+function DeadLetterStop(sName, sLine, wildcards)
+    EnableTrigger("DeadLetterCaptureStart", false)
+    EnableTrigger("DeadLetterCaptureEnd", false)
+    EnableTrigger("DeadLetterCaptureError", false)
+
+    if(next(letter_pattern)) then
+        --Note("Letter is due: " .. wildcards.time)
+        DeadLetterSolution()
+    end
+end
+
+function DeadLetterSolution()
+    name = "^".. string.gsub(letter_pattern[1], "_", ".") .. "$"
+    place = "^" .. string.gsub(letter_pattern[2], "_", ".")
+
+    for k,v in pairs(difficult_customer) do
+        if(string.match(k, name)) then
+            if(string.match(v[2], place)) then
+                Note("[DC] Deliver letter to: " .. v[1] .. " in " .. v[2])
+            end
+        end
+    end
+
+    for k,v in pairs(distant_land) do
+        if(string.match(k, name)) then
+            if(string.match(v[2], place)) then
+                Note("[DL] Deliver letter to: " .. v[1] .. " in " .. v[2])
+            end
+        end
+    end
+
+    for k,v in pairs(far_away) do
+        if(string.match(k, name)) then
+            if(string.match(v[2], place)) then
+                Note("[FA] Deliver letter to: " .. v[1] .. " in " .. v[2])
+            end
+        end
+    end
+end
+        ]]>
+    </script>
+    <triggers>
+        <trigger
+            enabled="n"
+            ignore_case="n"
+            keep_evaluating="y"
+            match="(?P<line>.+)"
+            regexp="y"
+            script="DeadLetterParse"
+            sequence="35"
+            name="DeadLetterCaptureStart"
+        ></trigger>
+        <trigger
+            enabled="n"
+            ignore_case="n"
+            keep_evaluating="y"
+            match="^Deliver by (?P<time>.+ \[\w{3}\])\."
+            regexp="y"
+            script="DeadLetterStop"
+            sequence="35"
+            name="DeadLetterCaptureEnd"
+        ></trigger>
+        <trigger
+            enabled="n"
+            ignore_case="n"
+            keep_evaluating="y"
+            match="^Cannot find \Wletter\W, no match\.$"
+            regexp="y"
+            script="DeadLetterStop"
+            sequence="35"
+            name="DeadLetterCaptureError"
+        ></trigger>
+    </triggers>
+</muclient>
