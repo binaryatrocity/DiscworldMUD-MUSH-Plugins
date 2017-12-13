@@ -1,0 +1,204 @@
+
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE muclient>
+<muclient>
+    <plugin
+        name="DeliverySolver"
+        author="Ruhsbaar"
+        language="Lua"
+        purpose="Replace Mr. Founder"
+        date_written="2017-12-08"
+        date_modified="2017-12-08"
+        save_state="n"
+        version="0.1"
+        id="4938b044049c90b2b77ef1e7"
+        >
+    </plugin>
+    <aliases>
+        <alias
+            match="solvejob"
+            enabled="y"
+            ignore_case="y"
+            sequence="30"
+            script="DeliverySolver"
+        ></alias>
+        <alias
+            match="sj"
+            enabled="y"
+            ignore_case="y"
+            sequence="30"
+            script="DeliverySolver"
+        ></alias>
+    </aliases>
+    <script>
+        <![CDATA[
+rare_items = {
+ ["abacus"] = "DJB architects, sold by wandering dealers/merchants/traders in DJB, Hong accountant in BP, sometimes NPCs in Chronides farmstead",
+ ["aikuchi dagger"] = "Nitsuni -- SNAIL, DANGEROUS AREA",
+ ["AMCW badge"] = "Ankh-Morpork",
+ ["amulet of confession"] = "Sold inside Temple of Soyin",
+ ["beaded belly chain"] = "Sold by Maple Bede, NPC that wanders on/near Isle of Gods, AM. Scryable as 'maple'",
+ ["begging tin"] = "Ankh-Morpork",
+ ["black bandana"] = "Hidden smuggler cave below Ephebe -- DANGEROUS AREA",
+ ["black cotton dress"] = "Mourners in Sto Lat cemetary, some witchy NPCs",
+ ["black lace shawl"] = "",
+ ["black silk zubon"] = "Officers in BP (found inside of rooms on Cherry Blossom Rd., which is just SE of the Square of Thousand Parades) are a reliable source",
+ ["black sowrong"] = "Rareish item on several female NPCs in genua",
+ ["blue kerchief"] = "girls in AM dock/underdock area, some Ankh servants",
+ ["blue obi"] = "<family name> mandarin, Old man, Old woman, Poet, Scribe, Serene Roses, <family name> dealer, merchant, salesman, saleswoman, trader, vendor (Bes Pelargic)",
+ ["boxing ring"] = "Inside safe in Bes Pelargic real estate agency. Only thieves can safecrack",
+ ["bright copper armband"] = "Adeipho Chronides, Farmer, Slave, Slave boy, Slave girl, Slave woman, Young woman (Chronides farmstead, south of Ephebe)",
+ ["bright copper necklet"] = "Adeipho Chronides, Farmer, Slave, Slave boy, Slave girl, Slave woman, Young woman (Chronides farmstead, south of Ephebe)",
+ ["brown felt hat"] = "Little Old Ladies in AM",
+ ["clump of golden chains"] = "Common on BP noblemen",
+ ["cotton socks"] = "brats wear these socks, you must mend the socks first",
+ ["crescent moon shield"] = "Hoplites in Ephebe, may have other shields instead",
+ ["curved sword"] = "Fighters/bodyguards on Sto Plains road (usually have other weapons)",
+ ["dark blue tricorn"] = "AM town criers",
+ ["dark green obi"] = "See blue obi",
+ ["dark skirt"] = "",
+ ["deluxe lockpick"] = "sold in thief/assassin shops, carried by trollish locksmiths on Ramtops roads, sold by some figure/fixer/smuggler/etc. NPC at AM docks",
+ ["dirty grey robe"] = "Djelibeybi on pickpockething children, tramps, vagabonds",
+ ["dusty blue himation"] = "Sometimes sold in himation shop in Ephebe, random NPCs in Ephebe",
+ ["fancy thobe"] = "D'reg (Djelibeybi); Trafficker (Djelibeybi. Lower Djel Trading Post)",
+ ["filigree hairpin"] = "Old man, old woman, [family name] dealer, merchant, salesman, saleswoman, trader, vendor (Bes Pelargic)",
+ ["frayed trousers"] = "drunks/scavengers at AM docks, several Sto roads NPCs, etc.",
+ ["freshwater pearl bracelet"] = "Baroness, Duchess, Duke, Earl, Lady <name> (Genua); Charisse of Gapp (Genua. Inside the Temple of Gapp, on Darling Road). Rare item on these NPCs--they usually have a different piece of jewellery.",
+ ["gold-trimmed obi"] = "See blue obi",
+ ["greasy white apron"] = "Mothers in SW AM",
+ ["green linen gown"] = "Can be stolen from laundry in Little Brindisi.",
+ ["green smock"] = "Servants in AM may have them. Rarely found on Lancre NPCs. Fillet of Fish in Temple of Small Gods is a reliable source.",
+ ["green trousers"] = "Many sources. Possible to find this on farmers/peasants in OC while doing OC missions.",
+ ["green wool shirt"] = "",
+ ["grey pleated skirt"] = "Female lawyers/bankers in AM, fishmongers/florists/tanners/tinkers in Sto Lat",
+ ["grey woollen gown"] = "",
+ ["hessian robe"] = "Ephebe slaves",
+ ["horsehair-crested bronze helm"] = "Hoplites in Ephebe, may have other helmets instead",
+ ["hot fudge sundae"] = "Sold in Ice Cream Store a bit SE of the Unseen University, item melts quickly, cannot be delivered if partially melted",
+ ["huge fruit covered hat"] = "female opera singers on/near Isle of Gods in AM",
+ ["jiann"] = "BP noblemen bodyguards, doorman of Fang estate, Imperial Guard shop (must be member to purchase)",
+ ["kogake tabi"] = "BP noblemen, Nitsuni in The Snail",
+ ["lacy bloomers"] = "Can be stolen from laundry in Little Brindisi.",
+ ["lamb chop"] = "Pyschotic Sheep in Sheepridge, creatable via Wurple's Midnight Snack, item rots over time",
+ ["leaf-bladed dagger"] = "",
+ ["leather protective"] = "Hublandish Barbarians in Ramtops & Uberwald",
+ ["lobster cracker"] = "Fishermen in Ephebe, try under docks",
+ ["maze toe ring"] = "Sold by Franky Figgs, Temple of Small Gods NPC",
+ ["newt bangle"] = "Several common Genuan NPCs",
+ ["okobo"] = "",
+ ["old green cloak"] = "Semi-common on rangers; rangers frequently found in mountain terrains south of AM. Several other NPCs",
+ ["old shirt"] = "Hitokui family (Salt Shaker), AM fishermen near docks, Old Wilfred, can be stolen from laundry in Little Brindisi",
+ ["old worn cane"] = "Alston Applegate in Bleak Prospect, Uncle Blacksheep Clown in AM, several other NPCs",
+ ["oyster knife"] = "Fishermen in Ephebe underdocks",
+ ["pair of cotton socks"] = "Kill brat in SW Morpork, loot their hole-ridden cotton socks, mend their socks",
+ ["pair of dentist's trousers"] = "Hsif Knip (unscryable AM NPC)",
+ ["pair of frayed trousers"] = "",
+ ["pair of green trousers"] = "",
+ ["pair of kogake tabi"] = "BP Noblemen",
+ ["pair of laced sandals"] = "Priests in Ephebe",
+ ["pair of old trousers"] = "",
+ ["pair of peach pumps"] = "Ankh-Morpork, Isle of Gods",
+ ["pair of purple-black trousers"] = "Nautical themed NPCs in AM, often found at/nearish docks",
+ ["pair of torn trousers"] = "",
+ ["pair of white boxer shorts with red polka-dots"] = "",
+ ["pair of yellow braces"] = "Several members of the clown family in Salt Shaker, SE AM",
+ ["palm frond hat"] = "",
+ ["pirate's shirt"] = "buccaneers in harbour E of DJB",
+ ["plain linen kilt"] = "Athletes in Ephebe",
+ ["plain white cotton blouse"] = "",
+ ["plain white thobe"] = "",
+ ["ptourist pturban"] = "Sold by Urban Pturbans shop in Djelibeybi",
+ ["push-up breastplate"] = "Female Hublandish Barbarians",
+ ["red and green spotted mushroom"] = "Sold by Jack Straw in Sto Lat (Garlic Grove east of Hill Street [w,ne].), possibly fixer type NPCs at AM docks",
+ ["ripped shirt"] = "",
+ ["rough hessian trousers"] = "Sto Lat thugs and vagrants sometimes have them, can be stolen from laundry in Little Brindisi.",
+ ["rubber apron"] = "Sto Lat priests",
+ ["rubber chicken"] = "Nyvven (unscryable AM NPC)",
+ ["sexy white linen loincloth"] = "Athletes in Ephebe",
+ ["shimmering fish scale bodysuit"] = "underwater Fish shop, BP",
+ ["shiny blue ribbon"] = "Sold by some of DJB's wandering merchants/vendors/etc. Also some Ephebe girls",
+ ["short-sleeved white cotton shirt"] = "Sailors on Broken Moons have them too.",
+ ["sickly yellow robe"] = "semi-common on AM priests",
+ ["small badge"] = "Sold by SMOC Dihbl in Calh-Nhad. Getting to Calh-Nhad w/o faith or magic is HUGE pain in the butt as terrains require climbing. (can be flown to by witches)",
+ ["small ruby ring"] = "occasionally found on BP noblemen",
+ ["startling green dress"] = "AM Opera singers on the Isle of Gods, some women in AM",
+ ["Tacticus Academy tie"] = "Worn by schoolchildren in Genua. Fragile item, turn off 'tactics focus neck'",
+ ["torn trousers"] = "Many sources. Semi-common AM beggers, farmers outside DJB, can be stolen from laundry in Little Brindisi.",
+ ["wolf pelt"] = "",
+ ["yellow ribbon"] = "Worn by Palm Trees at the Oasis; sold by merchants,traders,dealers on the Sto Plains roads",
+ ["yellow smock"] = "Can be stolen from laundry in Little Brindisi.",
+ ["white cotton bodice"] = "Children (AM/Sto Lat), Bridisian girls/women, can be stolen from laundry in Little Brindisi.",
+ ["white smock"] = "Peasants in Sto Lat are a reliable source, may appear on several other NPCs, can be stolen from laundry in Little Brindisi.",
+}
+
+item_pattern = ""
+
+function DeliverySolver(sName, sLine, wildcards)
+    letter_pattern = {}
+    EnableTrigger("DeliveryCaptureStart", true)
+    EnableTrigger("DeliveryCaptureEnd", true)
+    EnableTrigger("DeliveryCaptureError", true)
+    Send("read writ")
+end
+
+function DeliveryParse(sName, sLine, wildcards)
+    if(string.match(wildcards.line, "You are required to deliver ")) then
+        item_pattern = wildcards.line
+    end
+end
+
+function DeliveryStop(sName, sLine, wildcards)
+    EnableTrigger("DeliveryCaptureStart", false)
+    EnableTrigger("DeliveryCaptureEnd", false)
+    EnableTrigger("DeliveryCaptureError", false)
+
+    if(item_pattern ~= null) then
+        DeliverySolution()
+    end
+end
+
+function DeliverySolution()
+    delivery = "You are required to deliver an? ([%w%s]+) to ([%w%s]+) at ([%w%s'-]+) on ([%w%s]+)%."
+    item, person, building, location = string.match(item_pattern,delivery)
+
+    for k,v in pairs(rare_items) do
+        if(string.match(k, item)) then
+            Note("[RI] Item Location: " .. v)
+        end
+    end
+end
+        ]]>
+    </script>
+    <triggers>
+        <trigger
+            enabled="n"
+            ignore_case="n"
+            keep_evaluating="y"
+            match="(?P<line>.+)"
+            regexp="y"
+            script="DeliveryParse"
+            sequence="35"
+            name="DeliveryCaptureStart"
+        ></trigger>
+        <trigger
+            enabled="n"
+            ignore_case="n"
+            keep_evaluating="y"
+            match="^You have until \d{1,2}:\d{2}[a|p]m, \w+ [\dthndst]{3,4} \w+ \w+, UC \d{4} to complete this job\.$"
+            regexp="y"
+            script="DeliveryStop"
+            sequence="35"
+            name="DeliveryCaptureEnd"
+        ></trigger>
+        <trigger
+            enabled="n"
+            ignore_case="n"
+            keep_evaluating="y"
+            match="^Cannot find \Wwrit\W, no match\.$"
+            regexp="y"
+            script="DeliveryStop"
+            sequence="35"
+            name="DeliveryCaptureError"
+        ></trigger>
+    </triggers>
+</muclient>
