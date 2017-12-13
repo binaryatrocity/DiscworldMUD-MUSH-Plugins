@@ -13,6 +13,7 @@
    requires="5.04"
    version="1.0"
    >
+
 </plugin>
 
 <include name="constants.lua"/>
@@ -235,8 +236,11 @@ function DeathTimers()
         else
             difference = math.floor((current_time - kill_timers[ord]["time"]) + 0.5)
             local mins = math.floor(difference/60)
-            local secs = difference % 60
-            Note(" - (" .. mins .. "m" .. secs .. "s)\t" .. kill_timers[ord]["display"])
+            if mins < 10 then
+                Note(" - (0" .. mins .. "m)\t" .. kill_timers[ord]["display"])
+            else
+                Note(" - (" .. mins .. "m)\t" .. kill_timers[ord]["display"])
+            end
         end
     end
     Note("\n.:: Visit Timers ::.")
@@ -246,8 +250,11 @@ function DeathTimers()
         else
             difference = math.floor((current_time - visit_timers[ord]["time"]) + 0.5)
             local mins = math.floor(difference/60)
-            local secs = difference % 60
-            Note(" - (" .. mins .. "m" .. secs .. "s)\t" .. visit_timers[ord]["display"])
+            if mins < 10 then
+                Note(" - (0" .. mins .. "m)\t" .. visit_timers[ord]["display"])
+            else
+                Note(" - (" .. mins .. "m)\t" .. visit_timers[ord]["display"])
+            end
         end
     end
 end
@@ -273,8 +280,7 @@ function GroupSend(name, line, wildcards)
         else
             difference = math.floor((current_time - kill_timers[ord]["time"]) + 0.5)
             local mins = math.floor(difference/60)
-            local secs = difference % 60
-            dtsync = dtsync .. kill_timers[ord]["display"] .. ": " .. mins .. "m" .. secs .. "s | "
+            dtsync = dtsync .. kill_timers[ord]["display"] .. ": " .. mins .. "m | "
         end
     end
     dtsync = dtsync:sub(1, dtsync:len()-2)
@@ -286,8 +292,7 @@ function GroupSend(name, line, wildcards)
         else
             difference = math.floor((current_time - visit_timers[ord]["time"]) + 0.5)
             local mins = math.floor(difference/60)
-            local secs = difference % 60
-            vtsync = vtsync .. visit_timers[ord]["display"] .. ": " .. mins .. "m" .. secs .. "s | "
+            vtsync = vtsync .. visit_timers[ord]["display"] .. ": " .. mins .. "m | "
         end
     end
     vtsync = vtsync:sub(1, vtsync:len()-2)
