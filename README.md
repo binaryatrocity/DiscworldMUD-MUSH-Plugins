@@ -1,7 +1,7 @@
 # DiscworldMUD-MUSH-Plugins
 
 ## XPTimer.xml
-This plugin displays the time since you last 'checked' various XP hotspots. Timers listed beneath the "Death" section have been counting since you saw an NPC death. Timers in the "Visit" section have been counting since GMCP data last showed that room (actually being in the room, WAMG, scrying etc).
+This plugin displays the time since you last 'checked' various XP hotspots. Timers listed beneath the "Death" section have been counting since you saw an NPC death. Timers in the "Visit" section have been counting since GMCP data last showed that room (actually being in the room, WAMG, scrying etc).  The XP hotspot timer requires Quow's minimap plugin, as I hook into his broadcast for GMCP data. You can find it [here](http://quow.co.uk/minimap.php)
 * 'dt' or 'deathtimers' will display the list of timers
 * 'gsdt' will share the timers with your group
 * 'dtreset <all/target>' will reset all timers or a specific spot
