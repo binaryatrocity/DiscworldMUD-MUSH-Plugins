@@ -124,7 +124,8 @@ kill_timers = {
     [9] = initSpot("the %l+ %l+ lion", "shaker lions"),
     [10] = initSpot("the %l+ student", "dojo"),
     [11] = initSpot("the %l+ grflx worker", "grflx", true),
-    [12] = initSpot("the %l+ grflx workleader", "grflx", true)
+    [12] = initSpot("the %l+ grflx workleader", "grflx", true),
+    [13] = initSpot("the giant leader", "giant leader"),
 }
 
 visit_timers = {
@@ -141,7 +142,11 @@ visit_timers = {
     -- 1k parades southwest corner
     [6] = initSpot("3862c5fd0fe83f4080bdb9b94519bf8da89d5015", "parades", true),
     -- 1k parades northeast corner
-    [7] = initSpot("95ede200c782fdb09239a2db85dd9f8775922f86", "parades", true)
+    [7] = initSpot("95ede200c782fdb09239a2db85dd9f8775922f86", "parades", true),
+    -- northern corner of the black market
+    [8] = initSpot("f6c60dd36ed38707eb954c3a670f2f9370a79399", "black market", true),
+    -- southern side of the black market
+    [9] = initSpot("0ae9d8c4f2b48f4fcc4cb57fd85443399be2ecc5", "black market", true),
 }
 
 
@@ -191,10 +196,10 @@ end
 function SpotReset(name, line, wildcards)
     if wildcards.target == "all" then
         for k,v in pairs(kill_timers) do
-            v["time"] = GetInfo(232)
+            v["time"] = 0
         end
         for k,v in pairs(visit_timers) do
-            v["time"] = GetInfo(232)
+            v["time"] = 0
         end
     else
         for k,v in pairs(kill_timers) do
