@@ -2,6 +2,9 @@
 <!DOCTYPE muclient>
 <!-- Saved on Sunday, April 09, 2017, 11:32 AM -->
 <!-- MuClient version 5.04 -->
+<!--
+     XP Hotspot Timer by Ruhsbaar
+-->
 <muclient>
 <plugin
    name="XPTimer"
@@ -30,13 +33,6 @@
     match="^dt$"
     regexp="y"
     script="DeathTimers"
-    sequence="100"
-  ></alias>
-  <alias
-    enabled="y"
-    match="^dtsync (?<target>\w+)$"
-    regexp="y"
-    script="SyncSend"
     sequence="100"
   ></alias>
   <alias
@@ -87,37 +83,22 @@
         name="YouDeathBlowHandler"
         sequence="100"
     ></trigger>
-    <trigger
-        enabled="y"
-        keep_evaluating="n"
-        match="^(?P<syncer>[\w ]+) tells you: ruhs_dtsync=\[(?P<numbers>[\d.,]+)\]$"
-        regexp="y"
-        omit_from_output="y"
-        script="SyncReceiveDeath"
-        name="SyncTriggerDeath"
-        sequence="100"
-    ></trigger>
-    <trigger
-        enabled="y"
-        keep_evaluating="n"
-        match="^(?P<syncer>[\w ]+) tells you: ruhs_vtsync=\[(?P<numbers>[\d.,]+)\]$"
-        regexp="y"
-        omit_from_output="y"
-        script="SyncReceiveVisit"
-        name="SyncTriggerVisit"
-        sequence="100"
-    ></trigger>
 </triggers>
 
 <script>
 <![CDATA[
 -- Utils
-function initSpot(name, display)
+function initSpot(name, display, group)
     local spot = {
         ["time"] = 0,
         ["name"] = name,
         ["display"] = display
     }
+
+    if group then
+        spot["group"] = true
+    end
+
     return spot
 end
 
@@ -132,30 +113,35 @@ last_room = {
 }
 
 kill_timers = {
-    [0] = initSpot("Delbert", "delbert"),
-    [1] = initSpot("the Triad boss", "medina boss"),
-    [2] = initSpot("the bandit leader", "bandit leader"),
-    [3] = initSpot("Hlakket the Bartender", "hlakket"),
-    [4] = initSpot("the Zoon Liar", "zoon liar"),
-    [5] = initSpot("Slim Stevie", "rogues"),
-    [6] = initSpot("the smuggler captain", "smuggler captain"),
-    [7] = initSpot("the ceremonial guard", "cguards"),
-    [8] = initSpot("the %l+ %l+ lion", "shaker lions"),
-    [9] = initSpot("the %l+ student", "dojo"),
-    [10] = initSpot("the %l+ grflx worker", "grflx worker")
+    [1] = initSpot("Delbert", "delbert"),
+    [2] = initSpot("the Triad boss", "medina boss"),
+    [3] = initSpot("the bandit leader", "bandit leader"),
+    [4] = initSpot("Hlakket the Bartender", "hlakket"),
+    [5] = initSpot("the Zoon Liar", "zoon liar"),
+    [6] = initSpot("Slim Stevie", "rogues"),
+    [7] = initSpot("the smuggler captain", "smuggler captain"),
+    [8] = initSpot("the ceremonial guard", "cguards"),
+    [9] = initSpot("the %l+ %l+ lion", "shaker lions"),
+    [10] = initSpot("the %l+ student", "dojo"),
+    [11] = initSpot("the %l+ grflx worker", "grflx", true),
+    [12] = initSpot("the %l+ grflx workleader", "grflx", true)
 }
 
 visit_timers = {
     -- shades maze entrance
-    [0] = initSpot("01bbd8b887e71314d8e358cbaf4f585391206bc4", "shades"),
+    [1] = initSpot("01bbd8b887e71314d8e358cbaf4f585391206bc4", "shades"),
     -- smugglers cove entrance
-    [1] = initSpot("ebff897af2b8bb6800a9a8636143099d0714be07", "smugglers"),
+    [2] = initSpot("ebff897af2b8bb6800a9a8636143099d0714be07", "smugglers"),
     -- casino, Gumoni's room
-    [2] = initSpot("11f3c9c2ccc3c66cdcaaad2a44854531275ccc52", "casino"),
+    [3] = initSpot("11f3c9c2ccc3c66cdcaaad2a44854531275ccc52", "casino"),
     -- second floor kitchen, salt shaker
-    [3] = initSpot("cb8aaf1cc79bb5e8977a6d0124791dd116eef443", "shaker"),
+    [4] = initSpot("cb8aaf1cc79bb5e8977a6d0124791dd116eef443", "shaker"),
     -- offler crocodile pond
-    [4] = initSpot("70546ec71867645ab5c51e9ce6087b75dcf4176f", "offler")
+    [5] = initSpot("70546ec71867645ab5c51e9ce6087b75dcf4176f", "offler"),
+    -- 1k parades southwest corner
+    [6] = initSpot("3862c5fd0fe83f4080bdb9b94519bf8da89d5015", "parades", true),
+    -- 1k parades northeast corner
+    [7] = initSpot("95ede200c782fdb09239a2db85dd9f8775922f86", "parades", true)
 }
 
 
@@ -203,14 +189,23 @@ function OnPluginBroadcast(msg, id, name, text)
 end
 
 function SpotReset(name, line, wildcards)
-    for k,v in pairs(kill_timers) do
-        if v["display"] == wildcards.target then
+    if wildcards.target == "all" then
+        for k,v in pairs(kill_timers) do
             v["time"] = GetInfo(232)
         end
-    end
-    for k,v in pairs(visit_timers) do
-        if v["display"] == wildcards.target then
+        for k,v in pairs(visit_timers) do
             v["time"] = GetInfo(232)
+        end
+    else
+        for k,v in pairs(kill_timers) do
+            if v["display"] == wildcards.target then
+                v["time"] = GetInfo(232)
+            end
+        end
+        for k,v in pairs(visit_timers) do
+            if v["display"] == wildcards.target then
+                v["time"] = GetInfo(232)
+            end
         end
     end
 end
@@ -219,153 +214,112 @@ end
 
 -- Output
 function DeathTimers()
-    local print_order = {}
-    local vprint_order = {}
     local current_time = GetInfo(232)
     local difference = GetInfo(232)
 
-    for order,spot in pairs(kill_timers) do table.insert(print_order, order) end
-    for order,spot in pairs(visit_timers) do table.insert(vprint_order, order) end
-    table.sort(print_order)
-    table.sort(vprint_order)
+    function PrintTimerTable(timers)
+        local groups = {}
+        for index,spot in ipairs(timers) do
+            if spot["group"] then
+                if not groups[spot["display"]] then
+                    groups[spot["display"]] = spot["time"]
+                else
+                    if groups[spot["display"]] < spot["time"] then
+                        groups[spot["display"]] = spot["time"]
+                    end
+                end
+            else
+                if spot["time"] == 0 then
+                    Note(" - (Unseen)\t" .. spot["display"])
+                else
+                    difference = math.floor((current_time - spot["time"]) + 0.5)
+                    local mins = math.floor(difference/60)
+                    if mins < 10 then
+                        Note(" - (0" .. mins .. "m)\t" .. spot["display"])
+                    else
+                        Note(" - (" .. mins .. "m)\t" .. spot["display"])
+                    end
+                end
+            end
+        end
+        for display,time in pairs(groups) do
+            if time == 0 then
+                Note(" - (Unseen)\t" .. display)
+            else
+                difference = math.floor((current_time - time) + 0.5)
+                local mins = math.floor(difference/60)
+                if mins < 10 then
+                    Note(" - (0" .. mins .. "m)\t" .. display)
+                else
+                    Note(" - (" .. mins .. "m)\t" .. display)
+                end
+            end
+        end
+    end
 
     Note(".:: Death Timers ::.")
-    for iter,ord in ipairs(print_order) do
-        if kill_timers[ord]["time"] == 0 then
-            Note(" - (Unseen)\t" .. kill_timers[ord]["display"])
-        else
-            difference = math.floor((current_time - kill_timers[ord]["time"]) + 0.5)
-            local mins = math.floor(difference/60)
-            if mins < 10 then
-                Note(" - (0" .. mins .. "m)\t" .. kill_timers[ord]["display"])
-            else
-                Note(" - (" .. mins .. "m)\t" .. kill_timers[ord]["display"])
-            end
-        end
-    end
+    PrintTimerTable(kill_timers)
+
+
     Note("\n.:: Visit Timers ::.")
-    for iter,ord in ipairs(vprint_order) do
-        if visit_timers[ord]["time"] == 0 then
-            Note(" - (Unseen)\t" .. visit_timers[ord]["display"])
-        else
-            difference = math.floor((current_time - visit_timers[ord]["time"]) + 0.5)
-            local mins = math.floor(difference/60)
-            if mins < 10 then
-                Note(" - (0" .. mins .. "m)\t" .. visit_timers[ord]["display"])
-            else
-                Note(" - (" .. mins .. "m)\t" .. visit_timers[ord]["display"])
-            end
-        end
-    end
+    PrintTimerTable(visit_timers)
 end
 
 function GroupSend(name, line, wildcards)
-    local print_order = {}
-    local vprint_order = {}
     local current_time = GetInfo(232)
     local difference = GetInfo(232)
 
-    for order,spot in pairs(kill_timers) do table.insert(print_order, order) end
-    for order,spot in pairs(visit_timers) do table.insert(vprint_order, order) end
-    table.sort(print_order)
-    table.sort(vprint_order)
+    function PrintTimerTable(timers)
+        local output = ""
+        local groups = {}
+        for index,spot in ipairs(timers) do
+            if spot["group"] then
+                if not groups[spot["display"]] then
+                    groups[spot["display"]] = spot["time"]
+                else
+                    if groups[spot["display"]] < spot["time"] then
+                        groups[spot["display"]] = spot["time"]
+                    end
+                end
+            else
+                if spot["time"] == 0 then
+                    output = output .. spot["display"] .. ": Unseen | "
+                else
+                    difference = math.floor((current_time - spot["time"]) + 0.5)
+                    local mins = math.floor(difference/60)
+                    output = output .. spot["display"] .. ": " .. mins .. "m | "
+                end
+            end
+        end
+        for display,time in pairs(groups) do
+            if time == 0 then
+                output = output .. spot["display"] .. ": Unseen | "
+            else
+                difference = math.floor((current_time - time) + 0.5)
+                local mins = math.floor(difference/60)
+                output = output .. spot["display"] .. ": " .. mins .. "m | "
+            end
+        end
+        output = output:sub(1, output:len()-2)
 
-    local dtsync = "Death: "
-    local vtsync = "Visit: "
+        return output
+    end
 
     -- List out death timers
-    for iter,ord in ipairs(print_order) do
-        if kill_timers[ord]["time"] == 0 then
-            dtsync = dtsync .. kill_timers[ord]["display"] .. ": Unseen | "
-        else
-            difference = math.floor((current_time - kill_timers[ord]["time"]) + 0.5)
-            local mins = math.floor(difference/60)
-            dtsync = dtsync .. kill_timers[ord]["display"] .. ": " .. mins .. "m | "
-        end
-    end
-    dtsync = dtsync:sub(1, dtsync:len()-2)
+    local kto = PrintTimerTable(kill_timers)
 
     -- List out visit timers
-    for iter,ord in ipairs(vprint_order) do
-        if visit_timers[ord]["time"] == 0 then
-            vtsync = vtsync .. visit_timers[ord]["display"] .. ": Unseen | "
-        else
-            difference = math.floor((current_time - visit_timers[ord]["time"]) + 0.5)
-            local mins = math.floor(difference/60)
-            vtsync = vtsync .. visit_timers[ord]["display"] .. ": " .. mins .. "m | "
-        end
-    end
-    vtsync = vtsync:sub(1, vtsync:len()-2)
+    local vto = PrintTimerTable(visit_timers)
 
-    Send("group say " .. dtsync .. " | " .. vtsync)
-end
-
-function SyncSend(name, line, wildcards)
-    local print_order = {}
-    local vprint_order = {}
-
-    for order,spot in pairs(kill_timers) do table.insert(print_order, order) end
-    for order,spot in pairs(visit_timers) do table.insert(vprint_order, order) end
-    table.sort(print_order)
-    table.sort(vprint_order)
-
-    local dtsync = "ruhs_dtsync=["
-    local vtsync = "ruhs_vtsync=["
-
-    -- List out death timers
-    for iter,ord in ipairs(print_order) do
-        dtsync = dtsync .. kill_timers[ord]["time"] .. ","
-    end
-    dtsync = dtsync:sub(1, dtsync:len()-1) .. "]"
-
-    -- List out visit timers
-    for iter,ord in ipairs(vprint_order) do
-        vtsync = vtsync .. visit_timers[ord]["time"] .. ","
-    end
-    vtsync = vtsync:sub(1, vtsync:len()-1) .. "]"
-
-    Send("brief queue")
-    Send("tell " .. wildcards[1] .. " " .. dtsync)
-    Send("tell " .. wildcards[1] .. " " .. vtsync)
-
-    if debug_flag then
-        Send("frimble " .. wildcards.target .. " tells you: " .. dtsync)
-        Send("frimble " .. wildcards.target .. " tells you: " .. vtsync)
-    end
-    Send("verbose queue")
-end
-
-
-
--- Sync Triggers
-function SyncReceiveDeath(name, line, wildcards)
-    local sync_count = 0
-    for num in string.gmatch(wildcards.numbers, "[%d.]+") do
-        if debug_flag then
-            Note("[XPTimer] Syncing " .. kill_timers[sync_count]["display"] .. " to " .. num)
-        end
-        kill_timers[sync_count]["time"] = tonumber(num)
-        sync_count = sync_count + 1
-    end
-end
-
-function SyncReceiveVisit(name, line, wildcards)
-    local sync_count = 0
-    for num in string.gmatch(wildcards.numbers, "[%d.]+") do
-        if debug_flag then
-            Note("[XPTimer] Syncing " .. visit_timers[sync_count]["display"] .. " to " .. num)
-        end
-        visit_timers[sync_count]["time"] = tonumber(num)
-        sync_count = sync_count + 1
-    end
+    Send("group say " .. kto .. " | " .. vto)
 end
 
 function HelpFile(name, line, wildcards)
     Note("XP Hotspot Timer by Ruhsbaar")
     Note("'dt' or 'deathtimers': display a list of XP hotspot timers")
     Note("'gsdt': share the list over group chat")
-    Note("'dtreset <target>': reset the target XP hotspot timer to zero")
-    Note("'dtsync <player>': sync your timers to another player using the plugin")
+    Note("'dtreset <all/target>': reset the target XP hotspot timer to zero")
+    Note("'dtdebug': toggle debug mode. Useful to find NPC string or room id to add spots")
 end
 
 ]]>
