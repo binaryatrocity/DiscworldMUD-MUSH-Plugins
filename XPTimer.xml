@@ -37,7 +37,7 @@
   ></alias>
   <alias
     enabled="y"
-    match="^dtreset (?<target>\w+)$"
+    match="^dtreset (?<target>[\w\s]+)$"
     regexp="y"
     script="SpotReset"
     sequence="100"
@@ -126,6 +126,7 @@ kill_timers = {
     [11] = initSpot("the %l+ grflx worker", "grflx", true),
     [12] = initSpot("the %l+ grflx workleader", "grflx", true),
     [13] = initSpot("the giant leader", "giant leader"),
+    [14] = initSpot("the %u%l+ captain", "black market captain"),
 }
 
 visit_timers = {
@@ -195,6 +196,7 @@ end
 
 function SpotReset(name, line, wildcards)
     if wildcards.target == "all" then
+        Note("[XPTimer] Resetting all spots to Unseen.")
         for k,v in pairs(kill_timers) do
             v["time"] = 0
         end
@@ -204,11 +206,13 @@ function SpotReset(name, line, wildcards)
     else
         for k,v in pairs(kill_timers) do
             if v["display"] == wildcards.target then
+                Note("[XPTimer] Resetting death timer for " .. v["display"] .. ".")
                 v["time"] = GetInfo(232)
             end
         end
         for k,v in pairs(visit_timers) do
             if v["display"] == wildcards.target then
+                Note("[XPTimer] Resetting visit timer for " .. v["display"] .. ".")
                 v["time"] = GetInfo(232)
             end
         end
