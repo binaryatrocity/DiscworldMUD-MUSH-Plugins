@@ -50,6 +50,15 @@
   <send>SetVariable("last_alignment", "%1")</send>
   </trigger>
 </triggers>
+<aliases>
+  <alias
+    enabled="y"
+    match="alignwindow"
+    regexp="y"
+    script="WindowToggle"
+    sequence="100"
+  ></alias>
+</aliases>
 
 <!--  Variables  -->
 
@@ -60,35 +69,102 @@
 <!-- Script -->
 <script>
     <![CDATA[
-function RefreshAlignmentWindow() 
+
+require "movewindow"
+
+local window_flag = true
+local window_name = "align_window_" .. GetPluginID()
+
+----
+-- Hooks
+----
+function OnPluginEnable()
+    RefreshAlignmentWindow()
+end
+
+function OnPluginDisable()
+    WindowShow(window_name, false)
+end
+
+function OnPluginClose()
+    WindowShow(window_name, false)
+end
+
+function OnPluginSaveState()
+    movewindow.save_state(window_name)
+end
+
+----
+-- Utilities
+----
+
+function EraseWindow()
+end
+
+function WindowToggle(name, line, wildcards)
+    if window_flag == false then
+        WindowShow(window_name, true)
+        window_flag = true
+    else
+        WindowShow(window_name, false)
+        window_flag = false
+    end
+end
+
+
+----
+-- Main
+----
+
+function CreateWindow()
     align = GetVariable("last_alignment")
 
+    win_width, win_height = 200, 50
+
     -- Create a miniwindow
-    win = "win_" .. GetPluginID()
+    window_info = movewindow.install(window_name, miniwin.pos_bottom_right, 0)
     WindowCreate(
-        win,
-        0, 0,
-        200, 50,
-        miniwin.pos_bottom_right,
-        miniwin.create_transparent,
+        window_name,
+        window_info.window_left,
+        window_info.window_top,
+        win_width, win_height,
+        window_info.window_mode,
+        window_info.window_flags,
         ColourNameToRGB("black")
     )
 
+    movewindow.add_drag_handler(window_name, 0, 0, 0, 0, miniwin.cursor_both_arrow)
+
     -- Draw Borders
-    WindowRectOp(win, miniwin.rect_frame, 0, 0, 200, 50, ColourNameToRGB("white"))
+    WindowRectOp(window_name, miniwin.rect_frame, 0, 0, win_width, win_height, ColourNameToRGB("white"))
 
     -- Write alignment to window
-    WindowFont (win, "f", "Trebuchet MS", 12, true, false, false, false) -- define font
-    width   = WindowTextWidth (win, "f", align)
+    WindowFont (window_name, "f", "Trebuchet MS", 12, true, false, false, false) -- define font
+    width   = WindowTextWidth (window_name, "f", align)
     left = (200 - width) / 2
-
-    WindowText(win, "f", GetVariable("last_alignment"), left, 15, 0, 0, ColourNameToRGB("white"), false)
+    WindowText(window_name, "f", GetVariable("last_alignment"), left, 15, 0, 0, ColourNameToRGB("white"), false)
 
     -- Show the window on screen
-    WindowShow(win, true)
+    WindowShow(window_name, true)
 end
 
-RefreshAlignmentWindow()
+function RefreshAlignmentWindow() 
+    align = GetVariable("last_alignment")
+
+    -- Clear the window
+    WindowRectOp(window_name, miniwin.rect_fill, 0, 0, 0, 0, ColourNameToRGB("black"))
+
+    -- Draw Borders
+    WindowRectOp(window_name, miniwin.rect_frame, 0, 0, win_width, win_height, ColourNameToRGB("white"))
+
+    -- Write alignment to window
+    WindowFont (window_name, "f", "Trebuchet MS", 12, true, false, false, false) -- define font
+    width   = WindowTextWidth (window_name, "f", align)
+    left = (200 - width) / 2
+    WindowText(window_name, "f", GetVariable("last_alignment"), left, 15, 0, 0, ColourNameToRGB("white"), false)
+end
+
+CreateWindow()
     ]]>
 </script>
 
