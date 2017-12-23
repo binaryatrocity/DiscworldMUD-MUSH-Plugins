@@ -39,6 +39,16 @@
   >
   <send>SetVariable("last_alignment", "%1")</send>
   </trigger>
+  <trigger
+   enabled="y"
+   match="^Hp\: \d{2,4}\(\d{2,4}\)  Gp\: \d{2,4}\(\d{2,4}\)  Xp\: \d{1,10}  Burden\: \d{1,3}\%  Align\: ([\w\s]+)$"
+   regexp="y"
+   send_to="12"
+   sequence="100"
+   script="RefreshAlignmentWindow"
+  >
+  <send>SetVariable("last_alignment", "%1")</send>
+  </trigger>
 </triggers>
 
 <!--  Variables  -->
