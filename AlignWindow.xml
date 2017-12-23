@@ -86,7 +86,6 @@ function RefreshAlignmentWindow()
 
     -- Show the window on screen
     WindowShow(win, true)
-    Note("Alignment: " .. GetVariable("last_alignment"))
 end
 
 RefreshAlignmentWindow()
