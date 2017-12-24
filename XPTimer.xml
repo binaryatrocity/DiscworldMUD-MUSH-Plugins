@@ -139,15 +139,18 @@ kill_timers = {
     [11] = initSpot("the %l+ grflx worker", "grflx", true),
     [12] = initSpot("the %l+ grflx workleader", "grflx", true),
     [13] = initSpot("the giant leader", "giant leader"),
-    [14] = initSpot("the %u%l+ captain", "black market"),
-    [15] = initSpot("Geraldo Ciaco", "casino", true),
-    [16] = initSpot("Marlon Gumboni", "casino", true),
-    [17] = initSpot("Charles Marchella", "casino", true),
-    [18] = initSpot("Frankie Harvard", "casino", true),
-    [19] = initSpot("Joe Corrola", "stables", true),
-    [20] = initSpot("Enrico Persuica", "stables", true),
-    [21] = initSpot("Samuel Casso", "stables", true),
-    [22] = initSpot("Louis Accardo", "stables", true),
+    -- [14] = initSpot("the %u%l+ captain", "black market"),
+    [14] = initSpot("Geraldo Ciaco", "casino", true),
+    [15] = initSpot("Marlon Gumboni", "casino", true),
+    [16] = initSpot("Charles Marchella", "casino", true),
+    [17] = initSpot("Frankie Harvard", "casino", true),
+    [18] = initSpot("Joe Corrola", "stables", true),
+    [19] = initSpot("Enrico Persuica", "stables", true),
+    [20] = initSpot("Samuel Casso", "stables", true),
+    [21] = initSpot("Louis Accardo", "stables", true),
+    [22] = initSpot("the %l+ rujona", "snail", true),
+    [23] = initSpot("the %l+ nitsuni", "snail", true),
+    [24] = initSpot("the Ome outlaw", "snail", true),
 }
 
 visit_timers = {
@@ -156,19 +159,19 @@ visit_timers = {
     -- smugglers cove entrance
     [2] = initSpot("ebff897af2b8bb6800a9a8636143099d0714be07", "smugglers"),
     -- casino, Gumoni's room
-    [3] = initSpot("11f3c9c2ccc3c66cdcaaad2a44854531275ccc52", "casino"),
+    -- [3] = initSpot("11f3c9c2ccc3c66cdcaaad2a44854531275ccc52", "casino"),
     -- second floor kitchen, salt shaker
-    [4] = initSpot("cb8aaf1cc79bb5e8977a6d0124791dd116eef443", "shaker"),
+    [3] = initSpot("cb8aaf1cc79bb5e8977a6d0124791dd116eef443", "shaker"),
     -- offler crocodile pond
-    [5] = initSpot("70546ec71867645ab5c51e9ce6087b75dcf4176f", "offler"),
+    [4] = initSpot("70546ec71867645ab5c51e9ce6087b75dcf4176f", "offler"),
     -- 1k parades southwest corner
-    [6] = initSpot("3862c5fd0fe83f4080bdb9b94519bf8da89d5015", "parades", true),
+    [5] = initSpot("3862c5fd0fe83f4080bdb9b94519bf8da89d5015", "parades", true),
     -- 1k parades northeast corner
-    [7] = initSpot("95ede200c782fdb09239a2db85dd9f8775922f86", "parades", true),
+    [6] = initSpot("95ede200c782fdb09239a2db85dd9f8775922f86", "parades", true),
     -- northern corner of the black market
-    [8] = initSpot("f6c60dd36ed38707eb954c3a670f2f9370a79399", "black market", true),
+    [7] = initSpot("f6c60dd36ed38707eb954c3a670f2f9370a79399", "black market", true),
     -- southern side of the black market
-    [9] = initSpot("0ae9d8c4f2b48f4fcc4cb57fd85443399be2ecc5", "black market", true),
+    [8] = initSpot("0ae9d8c4f2b48f4fcc4cb57fd85443399be2ecc5", "black market", true),
 }
 
 
@@ -238,7 +241,7 @@ function SpotReset(name, line, wildcards)
         for k,v in pairs(kill_timers) do
             if v["display"] == wildcards.target then
                 Note("[XPTimer] Resetting death timer for " .. v["display"] .. ".")
-                v["time"] = GetInfo(232)
+                v["time"] = GetInfo(232) - (60*10)
             end
         end
         for k,v in pairs(visit_timers) do
@@ -424,7 +427,7 @@ function DrawTimersOnWindow()
                     length = math.floor(math.log10(time)) 
                 end
             else
-                length = time:len()
+                length = time:len() + 1
             end
 
             spaces_needed = spaces_needed - length
@@ -432,7 +435,7 @@ function DrawTimersOnWindow()
             -- start output
             local output = " - ("
             -- add zero for under 10 minutes
-            if length < 2 then output = output .. "0" end
+            if length < 1 then output = output .. "0" end
             -- add minutes
             output = output .. time
             -- add "m" minutes label
