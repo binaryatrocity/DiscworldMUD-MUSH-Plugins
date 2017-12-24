@@ -1,5 +1,5 @@
 # DiscworldMUD MUSHClient Plugins
-*By: Ruhsbaar*
+###### By Ruhsbaar
 
 
 ## XPTimer.xml
