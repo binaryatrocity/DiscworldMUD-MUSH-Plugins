@@ -19,8 +19,8 @@ This plugin provides hints on where to find items for the Ankh-Morpork Job Marke
 
 ## AlignWindow.xml
 This was written for a specific character and so requires a few things:
-* Battle Monitor "Hp: ##(##) Gp: ##(##) Xp: ######## Burden: ##% Align: # #"
-* Prompt: "<<< $align$ >>>$newline$"
+* Battle Monitor `Hp: ##(##) Gp: ##(##) Xp: ######## Burden: ##% Align: # #`
+* Prompt: `<<< $align$ >>>$newline$`
 If your battle monitor and/or prompt match the above strings, this will show your most recently displayed alignment in a miniwindow that you can click+drag to move. 
 * 'alignwindow' command will toggle the window on and off
 * If your prompt matches the above, it will be gagged from MUD output
