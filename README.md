@@ -16,3 +16,11 @@ This plugin displays the full name and location of your dead letter target. Curr
 ## DeliverySolver.xml
 This plugin provides hints on where to find items for the Ankh-Morpork Job Market item delivery missions. Currently only works for the Deliverer of Rare Items job-type.
 * 'sj' or 'solvejob' will read the employment writ in your inventory and display additional information
+
+## AlignWindow.xml
+This was written for a specific character and so requires a few things:
+* Battle Monitor "Hp: ##(##) Gp: ##(##) Xp: ######## Burden: ##% Align: # #"
+* Prompt: "<<< $align$ >>>$newline$"
+If your battle monitor and/or prompt match the above strings, this will show your most recently displayed alignment in a miniwindow that you can click+drag to move. 
+* 'alignwindow' command will toggle the window on and off
+* If your prompt matches the above, it will be gagged from MUD output
