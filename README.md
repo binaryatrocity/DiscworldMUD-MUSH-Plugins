@@ -28,4 +28,5 @@ If your battle monitor and/or prompt match the above strings, this will show you
 * If your prompt matches the above, it will be gagged from MUD output
 
 <br/>
+
 ###### Written by Ruhsbaar of the Venerable Council of Seers
