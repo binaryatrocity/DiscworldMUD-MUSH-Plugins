@@ -442,12 +442,9 @@ function DrawTimersOnWindow()
             if type(time) == "number" then output = output .. "m" end
             -- close parens
             output = output .. ")"
-            -- add needed spaces
-            output = output .. string.rep(" ", spaces_needed)
-            -- end output
-            output = output .. display
 
             WindowText(window_name, "f", output, 5, height, 0, 0, ColourNameToRGB("white"), false)
+            WindowText(window_name, "f", display, 85, height, 0, 0, ColourNameToRGB("white"), false)
         end
 
         for index,spot in ipairs(timers) do
@@ -465,11 +462,7 @@ function DrawTimersOnWindow()
                 else
                     difference = math.floor((current_time - spot["time"]) + 0.5)
                     local mins = math.floor(difference/60)
-                    if mins < 10 then
-                        DrawLine(mins, spot["display"])
-                    else
-                        DrawLine(mins, spot["display"])
-                    end
+                    DrawLine(mins, spot["display"])
                 end
             end
         end
@@ -479,7 +472,7 @@ function DrawTimersOnWindow()
             else
                 difference = math.floor((current_time - time) + 0.5)
                 local mins = math.floor(difference/60)
-                DrawLine(time, display)
+                DrawLine(mins, display)
             end
         end
     end
