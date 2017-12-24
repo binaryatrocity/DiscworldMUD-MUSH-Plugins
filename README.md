@@ -7,7 +7,7 @@ This plugin displays the time since you last 'checked' various XP hotspots. Time
 * 'gsdt' will share the timers with your group
 * 'dtreset <all/target>' will reset all timers or a specific spot. 'all' marks everything Unseen, 'target' sets zero, like you just killed/visited the spot.
 * 'dtdebug' toggles debugging output. victim/killer and room vnums will be displayed. useful for adding new spots. 
-* 'dtwindow' toggles a mini-window displaying timer info, can click and drag to move it.
+* 'dtwindow' toggles a mini-window displaying timer info, can click and drag to move it. **\*\*experimental\*\***
 * 'help deathtimer' will display this info in-client
   
 ## DeadLetter.xml
