@@ -1,4 +1,6 @@
-# DiscworldMUD-MUSH-Plugins
+# DiscworldMUD MUSHClient Plugins
+-By: Ruhsbaar-
+
 
 ## XPTimer.xml
 This plugin displays the time since you last 'checked' various XP hotspots. Timers listed beneath the "Death" section have been counting since you saw an NPC death. Timers in the "Visit" section have been counting since GMCP data last showed that room (actually being in the room, WAMG, scrying etc).  This plugin relies on Quow's minimap plugin for data broadcasts, you can find it [here](http://quow.co.uk/minimap.php).
