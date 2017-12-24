@@ -241,7 +241,7 @@ function SpotReset(name, line, wildcards)
         for k,v in pairs(kill_timers) do
             if v["display"] == wildcards.target then
                 Note("[XPTimer] Resetting death timer for " .. v["display"] .. ".")
-                v["time"] = GetInfo(232) - (60*10)
+                v["time"] = GetInfo(232)
             end
         end
         for k,v in pairs(visit_timers) do
