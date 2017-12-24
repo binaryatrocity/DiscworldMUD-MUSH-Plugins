@@ -44,21 +44,28 @@
   ></alias>
   <alias
     enabled="y"
-    match="gsdt"
+    match="^gsdt$"
     regexp="y"
     script="GroupSend"
     sequence="100"
   ></alias>
   <alias
     enabled="y"
-    match="dtdebug"
+    match="^dtdebug$"
     regexp="y"
     script="DebugToggle"
     sequence="100"
   ></alias>
   <alias
     enabled="y"
-    match="help deathtimer"
+    match="^dtwindow$"
+    regexp="y"
+    script="WindowToggle"
+    sequence="100"
+  ></alias>
+  <alias
+    enabled="y"
+    match="^help deathtimer$"
     regexp="y"
     script="HelpFile"
     sequence="100"
@@ -87,6 +94,9 @@
 
 <script>
 <![CDATA[
+require "movewindow"
+
+
 -- Utils
 function initSpot(name, display, group)
     local spot = {
@@ -103,9 +113,12 @@ function initSpot(name, display, group)
 end
 
 
-
 -- Data
 debug_flag = False
+window_flag = false
+
+window_name = "xpwindow_" .. GetPluginID()
+window_info = {}
 
 last_room = {
     ["name"] = "",
@@ -126,7 +139,15 @@ kill_timers = {
     [11] = initSpot("the %l+ grflx worker", "grflx", true),
     [12] = initSpot("the %l+ grflx workleader", "grflx", true),
     [13] = initSpot("the giant leader", "giant leader"),
-    [14] = initSpot("the %u%l+ captain", "black market captain"),
+    [14] = initSpot("the %u%l+ captain", "black market"),
+    [15] = initSpot("Geraldo Ciaco", "casino", true),
+    [16] = initSpot("Marlon Gumboni", "casino", true),
+    [17] = initSpot("Charles Marchella", "casino", true),
+    [18] = initSpot("Frankie Harvard", "casino", true),
+    [19] = initSpot("Joe Corrola", "stables", true),
+    [20] = initSpot("Enrico Persuica", "stables", true),
+    [21] = initSpot("Samuel Casso", "stables", true),
+    [22] = initSpot("Louis Accardo", "stables", true),
 }
 
 visit_timers = {
@@ -170,6 +191,11 @@ function DeathBlowHandler(name, line, wildcards)
             v["time"] = GetInfo(232)
         end
     end
+
+  -- Update our window if its enabled
+  if window_flag == true then
+    DrawWindow()
+  end
 end
 
 function OnPluginBroadcast(msg, id, name, text)
@@ -191,6 +217,11 @@ function OnPluginBroadcast(msg, id, name, text)
             v["time"] = GetInfo(232)
         end
     end
+  end
+
+  -- Update our window if its enabled
+  if window_flag == true then
+    DrawWindow()
   end
 end
 
@@ -302,11 +333,11 @@ function GroupSend(name, line, wildcards)
         end
         for display,time in pairs(groups) do
             if time == 0 then
-                output = output .. spot["display"] .. ": Unseen | "
+                output = output .. display .. ": Unseen | "
             else
                 difference = math.floor((current_time - time) + 0.5)
                 local mins = math.floor(difference/60)
-                output = output .. spot["display"] .. ": " .. mins .. "m | "
+                output = output .. display .. ": " .. mins .. "m | "
             end
         end
         output = output:sub(1, output:len()-2)
@@ -322,6 +353,172 @@ function GroupSend(name, line, wildcards)
 
     Send("group say " .. kto .. " | " .. vto)
 end
+
+
+--
+-- Miniwindow nonsense
+--
+WIN_WIDTH, WIN_HEIGHT = 200, 380
+function OnPluginInstall()
+    window_info = movewindow.install(window_name, miniwin.pos_center_all, 0)
+    WindowCreate(
+        window_name,
+        window_info.window_left,
+        window_info.window_top,
+        WIN_WIDTH, WIN_HEIGHT,
+        window_info.window_mode,
+        window_info.window_flags,
+        ColourNameToRGB("black")
+    )
+
+    movewindow.add_drag_handler(window_name, 0, 0, 0, 0, miniwin.cursor_both_arrow)
+    movewindow.save_state(window_name)
+
+    WindowFont(window_name, "f", "Trebuchet MS", 8, true, false, false, false)
+
+    DrawWindow()
+end
+
+function WindowToggle(name, line, wildcards)
+    if window_flag == false then
+        WindowShow(window_name, true)
+        window_flag = true
+    else
+        EraseWindow()
+        window_flag = false
+    end
+end
+
+function DrawWindow()
+    -- Clear the window
+    WindowRectOp(window_name, miniwin.rect_fill, 0, 0, 0, 0, ColourNameToRGB("black"))
+
+    -- Add a border to define edges
+    WindowRectOp(window_name, miniwin.rect_frame, 0, 0, WIN_WIDTH, WIN_HEIGHT, ColourNameToRGB("white"))
+
+    -- Write out our timers
+    DrawTimersOnWindow()
+end
+
+function DrawTimersOnWindow()
+    local num_lines = -1
+    local line_height = WindowFontInfo(window_name, "f", 1) - 2
+
+    local current_time = GetInfo(232)
+    local difference = GetInfo(232)
+
+    function PrintTimerTable(timers)
+        local groups = {}
+
+        function DrawLine(time, display)
+            num_lines = num_lines + 1
+            local height = (num_lines * line_height)
+
+            local length = 0
+            local spaces_needed = 12
+
+            if type(time) == "number" then
+                if time == 0 then
+                    length = 0
+                else
+                    length = math.floor(math.log10(time)) 
+                end
+            else
+                length = time:len()
+            end
+
+            spaces_needed = spaces_needed - length
+
+            -- start output
+            local output = " - ("
+            -- add zero for under 10 minutes
+            if length < 2 then output = output .. "0" end
+            -- add minutes
+            output = output .. time
+            -- add "m" minutes label
+            if type(time) == "number" then output = output .. "m" end
+            -- close parens
+            output = output .. ")"
+            -- add needed spaces
+            output = output .. string.rep(" ", spaces_needed)
+            -- end output
+            output = output .. display
+
+            WindowText(window_name, "f", output, 5, height, 0, 0, ColourNameToRGB("white"), false)
+        end
+
+        for index,spot in ipairs(timers) do
+            if spot["group"] then
+                if not groups[spot["display"]] then
+                    groups[spot["display"]] = spot["time"]
+                else
+                    if groups[spot["display"]] < spot["time"] then
+                        groups[spot["display"]] = spot["time"]
+                    end
+                end
+            else
+                if spot["time"] == 0 then
+                    DrawLine("Unseen", spot["display"])
+                else
+                    difference = math.floor((current_time - spot["time"]) + 0.5)
+                    local mins = math.floor(difference/60)
+                    if mins < 10 then
+                        DrawLine(mins, spot["display"])
+                    else
+                        DrawLine(mins, spot["display"])
+                    end
+                end
+            end
+        end
+        for display,time in pairs(groups) do
+            if time == 0 then
+                DrawLine("Unseen", display)
+            else
+                difference = math.floor((current_time - time) + 0.5)
+                local mins = math.floor(difference/60)
+                DrawLine(time, display)
+            end
+        end
+    end
+
+    -- Note(".:: Death Timers ::.")
+    num_lines = num_lines +1
+    local output = ".:: Death Timers ::."
+    local height = (num_lines * line_height)
+    WindowText(window_name, "f", output, 5, height, 0, 0, ColourNameToRGB("white"), false)
+    PrintTimerTable(kill_timers)
+
+    -- Blank Line
+    num_lines = num_lines +1
+    local output = ""
+    local height = (num_lines * line_height)
+    WindowText(window_name, "f", output, 5, height, 0, 0, ColourNameToRGB("white"), false)
+
+
+    -- Note("\n.:: Visit Timers ::.")
+    num_lines = num_lines +1
+    local output = ".:: Visit Timers ::."
+    local height = (num_lines * line_height)
+    WindowText(window_name, "f", output, 5, height, 0, 0, ColourNameToRGB("white"), false)
+    PrintTimerTable(visit_timers)
+end
+
+function EraseWindow()
+    movewindow.save_state(window_name)
+    WindowDelete(window_name)
+end
+
+function OnPluginDisable()
+    EraseWindow()
+end
+
+function OnPluginClose()
+    EraseWindow()
+end
+
+--
+-- Helpfile
+--
 
 function HelpFile(name, line, wildcards)
     Note("XP Hotspot Timer by Ruhsbaar")
