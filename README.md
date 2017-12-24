@@ -1,6 +1,5 @@
 # DiscworldMUD MUSHClient Plugins
-###### By Ruhsbaar
-<br/><br/><br/>
+<br/><br/>
 
 ## XPTimer.xml
 This plugin displays the time since you last 'checked' various XP hotspots. Timers listed beneath the "Death" section have been counting since you saw an NPC death. Timers in the "Visit" section have been counting since GMCP data last showed that room (actually being in the room, WAMG, scrying etc).  This plugin relies on Quow's minimap plugin for data broadcasts, you can find it [here](http://quow.co.uk/minimap.php).
@@ -27,3 +26,5 @@ This was written for a specific character and so requires a few things:
 If your battle monitor and/or prompt match the above strings, this will show your most recently displayed alignment in a miniwindow that you can click+drag to move. 
 * 'alignwindow' command will toggle the window on and off
 * If your prompt matches the above, it will be gagged from MUD output
+
+###### Written by Ruhsbaar of the Venerable Council of Seers
