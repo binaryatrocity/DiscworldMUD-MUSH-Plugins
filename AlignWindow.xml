@@ -53,7 +53,7 @@
 <aliases>
   <alias
     enabled="y"
-    match="alignwindow"
+    match="^alignwindow$"
     regexp="y"
     script="WindowToggle"
     sequence="100"
