@@ -94,6 +94,7 @@
 
 <script>
 <![CDATA[
+require "json"
 require "movewindow"
 
 
@@ -139,7 +140,6 @@ kill_timers = {
     [11] = initSpot("the %l+ grflx worker", "grflx", true),
     [12] = initSpot("the %l+ grflx workleader", "grflx", true),
     [13] = initSpot("the giant leader", "giant leader"),
-    -- [14] = initSpot("the %u%l+ captain", "black market"),
     [14] = initSpot("Geraldo Ciaco", "casino", true),
     [15] = initSpot("Marlon Gumboni", "casino", true),
     [16] = initSpot("Charles Marchella", "casino", true),
@@ -155,23 +155,33 @@ kill_timers = {
 
 visit_timers = {
     -- shades maze entrance
-    [1] = initSpot("01bbd8b887e71314d8e358cbaf4f585391206bc4", "shades"),
+    [1] = initSpot("AMShades", "shades"),
     -- smugglers cove entrance
     [2] = initSpot("ebff897af2b8bb6800a9a8636143099d0714be07", "smugglers"),
-    -- casino, Gumoni's room
-    -- [3] = initSpot("11f3c9c2ccc3c66cdcaaad2a44854531275ccc52", "casino"),
     -- second floor kitchen, salt shaker
     [3] = initSpot("cb8aaf1cc79bb5e8977a6d0124791dd116eef443", "shaker"),
     -- offler crocodile pond
     [4] = initSpot("70546ec71867645ab5c51e9ce6087b75dcf4176f", "offler"),
-    -- 1k parades southwest corner
-    [5] = initSpot("3862c5fd0fe83f4080bdb9b94519bf8da89d5015", "parades", true),
-    -- 1k parades northeast corner
-    [6] = initSpot("95ede200c782fdb09239a2db85dd9f8775922f86", "parades", true),
     -- northern corner of the black market
-    [7] = initSpot("f6c60dd36ed38707eb954c3a670f2f9370a79399", "black market", true),
+    [5] = initSpot("f6c60dd36ed38707eb954c3a670f2f9370a79399", "black market", true),
     -- southern side of the black market
-    [8] = initSpot("0ae9d8c4f2b48f4fcc4cb57fd85443399be2ecc5", "black market", true),
+    [6] = initSpot("0ae9d8c4f2b48f4fcc4cb57fd85443399be2ecc5", "black market", true),
+    -- southwest corner of oasis
+    [7] = initSpot("066ae1b58fc230eb5750bb3c81a52c12ddc1ccce", "oasis", true),
+    -- se center of oasis
+    [8] = initSpot("c8516e4e4017a99cd19183e5918c3bf767918ef0", "oasis", true),
+    -- sw center of oasis
+    [9] = initSpot("6dd759fc275793325c3f7449cd7f319af4f9892d", "oasis", true),
+    -- nw center of oasis
+    [10] = initSpot("b15950601c93e3adab31fb7755829cf3ed93b5b5", "oasis", true),
+    -- ne center of oasis
+    [11] = initSpot("899ad0dfdfc25ad0ebeb4ed861ea18e339adb4d0", "oasis", true),
+    -- the flamming cabbage
+    [12] = initSpot("cca9645565f2bb0d017ea9b1dcc9d1b3e9fcfe72", "cabbage"),
+    -- 1k parades southwest corner
+    [13] = initSpot("3862c5fd0fe83f4080bdb9b94519bf8da89d5015", "parades", true),
+    -- 1k parades northeast corner
+    [14] = initSpot("95ede200c782fdb09239a2db85dd9f8775922f86", "parades", true),
 }
 
 
@@ -202,21 +212,20 @@ function DeathBlowHandler(name, line, wildcards)
 end
 
 function OnPluginBroadcast(msg, id, name, text)
-  regex = '^room.info {%"identifier%":%"(%x+)%",%"name%":%"(.+)%",%"visibility%":%d,%"kind%":%"%w+%"}$'
-  identifier, roomname = string.match(text, regex)
+  roominfo = '^room.info (.+)'
+  roominfo = string.match(text, roominfo)
 
-  if(identifier) then
+  if(roominfo) then
     -- Record the last room we were in
-    last_room["name"] = roomname
-    last_room["identifier"] = identifier
+    last_room = assert(json.decode(roominfo))
 
     if debug_flag then
-        Note("[XPTimer] Room Name: \"" .. roomname .. "\" Identifier: \"" .. identifier .. "\"")
+        Note("[XPTimer] Room Name: \"" .. last_room["name"] .. "\" Identifier: \"" .. last_room["identifier"] .. "\"")
     end
 
     -- Check it against our saved vnums
     for k,v in pairs(visit_timers) do
-        if v["name"] == identifier then
+        if v["name"] == last_room["identifier"] then
             v["time"] = GetInfo(232)
         end
     end
@@ -251,6 +260,7 @@ function SpotReset(name, line, wildcards)
             end
         end
     end
+    DrawWindow()
 end
 
 
@@ -361,7 +371,7 @@ end
 --
 -- Miniwindow nonsense
 --
-WIN_WIDTH, WIN_HEIGHT = 200, 380
+WIN_WIDTH, WIN_HEIGHT = 190, 460
 function OnPluginInstall()
     window_info = movewindow.install(window_name, miniwin.pos_center_all, 0)
     WindowCreate(
@@ -386,6 +396,7 @@ function WindowToggle(name, line, wildcards)
     if window_flag == false then
         WindowShow(window_name, true)
         window_flag = true
+        DrawWindow()
     else
         EraseWindow()
         window_flag = false
@@ -476,6 +487,12 @@ function DrawTimersOnWindow()
             end
         end
     end
+
+    -- Blank Line
+    num_lines = num_lines +1
+    local output = ""
+    local height = (num_lines * line_height)
+    WindowText(window_name, "f", output, 5, height, 0, 0, ColourNameToRGB("white"), false)
 
     -- Note(".:: Death Timers ::.")
     num_lines = num_lines +1
