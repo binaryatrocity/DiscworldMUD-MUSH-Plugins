@@ -65,7 +65,14 @@
   ></alias>
   <alias
     enabled="y"
-    match="^help deathtimer$"
+    match="^dtsync (?<target>\w+)$"
+    regexp="y"
+    script="SyncSend"
+    sequence="100"
+  ></alias>
+  <alias
+    enabled="y"
+    match="^help (deathtimer|dt|death timer|spottimer|spot timer|xptimer|XPTimer)$"
     regexp="y"
     script="HelpFile"
     sequence="100"
@@ -88,6 +95,15 @@
         regexp="y"
         script="DeathBlowHandler"
         name="YouDeathBlowHandler"
+        sequence="100"
+    ></trigger>
+    <trigger
+        enabled="y"
+        keep_evaluating="n"
+        match="^(?P<syncer>[\w\s ]+) tells you: ruhs_dtsync=\[(?P<dtimes>.+)\] \| ruhs_vtsync=\[(?P<vtimes>.+)\]$"
+        regexp="y"
+        script="SyncReceiveTimers"
+        name="SyncTrigger"
         sequence="100"
     ></trigger>
 </triggers>
@@ -116,7 +132,7 @@ end
 
 -- Data
 debug_flag = False
-window_flag = false
+window_flag = False
 
 window_name = "xpwindow_" .. GetPluginID()
 window_info = {}
@@ -201,7 +217,7 @@ function DeathBlowHandler(name, line, wildcards)
 
     for k,v in pairs(kill_timers) do
         if string.match(victim, v["name"]) then
-            v["time"] = GetInfo(232)
+            v["time"] = os.time()
         end
     end
 
@@ -226,7 +242,7 @@ function OnPluginBroadcast(msg, id, name, text)
     -- Check it against our saved vnums
     for k,v in pairs(visit_timers) do
         if v["name"] == last_room["identifier"] then
-            v["time"] = GetInfo(232)
+            v["time"] = os.time()
         end
     end
   end
@@ -250,13 +266,13 @@ function SpotReset(name, line, wildcards)
         for k,v in pairs(kill_timers) do
             if v["display"] == wildcards.target then
                 Note("[XPTimer] Resetting death timer for " .. v["display"] .. ".")
-                v["time"] = GetInfo(232)
+                v["time"] = os.time()
             end
         end
         for k,v in pairs(visit_timers) do
             if v["display"] == wildcards.target then
                 Note("[XPTimer] Resetting visit timer for " .. v["display"] .. ".")
-                v["time"] = GetInfo(232)
+                v["time"] = os.time()
             end
         end
     end
@@ -267,8 +283,8 @@ end
 
 -- Output
 function DeathTimers()
-    local current_time = GetInfo(232)
-    local difference = GetInfo(232)
+    local current_time = os.time()
+    local difference = os.time()
 
     function PrintTimerTable(timers)
         local groups = {}
@@ -319,8 +335,8 @@ function DeathTimers()
 end
 
 function GroupSend(name, line, wildcards)
-    local current_time = GetInfo(232)
-    local difference = GetInfo(232)
+    local current_time = os.time()
+    local difference = os.time()
 
     function PrintTimerTable(timers)
         local output = ""
@@ -418,8 +434,8 @@ function DrawTimersOnWindow()
     local num_lines = -1
     local line_height = WindowFontInfo(window_name, "f", 1) - 2
 
-    local current_time = GetInfo(232)
-    local difference = GetInfo(232)
+    local current_time = os.time()
+    local difference = os.time()
 
     function PrintTimerTable(timers)
         local groups = {}
@@ -529,16 +545,106 @@ function OnPluginClose()
     EraseWindow()
 end
 
+
+--
+-- Between-player syncing
+--
+
+function SyncSend(name, line, wildcards)
+    local dtsync = "ruhs_dtsync=["
+    local vtsync = "ruhs_vtsync=["
+
+    --
+    -- Death Timers
+    --
+    local groups = {}
+    for index,spot in ipairs(kill_timers) do
+        if spot["group"] then
+            if not groups[spot["display"]] then
+                groups[spot["display"]] = spot["time"]
+            else
+                if groups[spot["display"]] < spot["time"] then
+                    groups[spot["display"]] = spot["time"]
+                end
+            end
+        else
+            if spot["time"] ~= 0 then
+                dtsync = dtsync .. spot["display"] .. "=" .. spot["time"] .. ","
+            end
+        end
+    end
+    for display,time in pairs(groups) do
+        if time ~= 0 then
+            dtsync = dtsync .. display .. "=" .. time .. ","
+        end
+    end
+    if dtsync:len() > 14 then
+        dtsync = dtsync:sub(1, dtsync:len()-1) .. "]"
+    else
+        dtsync = dtsync .. "]"
+    end
+
+    --
+    -- Visit Timers
+    --
+    local groups = {}
+    for index,spot in ipairs(visit_timers) do
+        if spot["time"] ~= 0 then
+            vtsync = vtsync .. spot["display"] .. "=" .. spot["time"] .. ","
+        end
+    end
+    if vtsync:len() > 14 then
+        vtsync = vtsync:sub(1, vtsync:len()-1) .. "]"
+    else
+        vtsync = vtsync .. "]"
+    end
+
+    if dtsync:len() > 15 or vtsync:len() > 15 then
+        local tell_string = "tell " .. wildcards.target .. " " .. dtsync .. " | " .. vtsync
+        local frimble_string = "frimble " .. wildcards.target .. " tells you: " .. dtsync .. " | " .. vtsync
+
+        Send(tell_string)
+        Send(frimble_string)
+    end
+end
+
+function SyncReceiveTimers(name, line, wildcards)
+    local count = 0
+
+    pattern = "([%a%s]+)=([%d]+)"
+    for display, clock in string.gmatch(wildcards.dtimes, pattern) do
+        for index,spot in ipairs(kill_timers) do
+            if spot["display"] == display then 
+                spot["time"] = clock
+                count = count + 1
+            end
+        end
+    end
+    for display, clock in string.gmatch(wildcards.vtimes, pattern) do
+        for index,spot in ipairs(visit_timers) do
+            if spot["display"] == display then
+                spot["time"] = clock
+                count = count + 1
+            end
+        end
+    end
+
+    Note("[XPTimer] Syncing " .. count .. " spot times from " .. wildcards.syncer)
+
+end
+
 --
 -- Helpfile
 --
 
 function HelpFile(name, line, wildcards)
     Note("XP Hotspot Timer by Ruhsbaar")
-    Note("'dt' or 'deathtimers': display a list of XP hotspot timers")
-    Note("'gsdt': share the list over group chat")
-    Note("'dtreset <all/target>': reset the target XP hotspot timer to zero")
-    Note("'dtdebug': toggle debug mode. Useful to find NPC string or room id to add spots")
+    Note("  - 'dt' or 'deathtimers': display a list of XP hotspot timers")
+    Note("  - 'dtwindow' : open draggable miniwindow displaying timers")
+    Note("  - 'gsdt': share the list over group chat")
+    Note("  - 'dtreset <all/target>': reset the target XP hotspot timer to zero")
+    Note("  - 'dtsync <player>': send a tell to a player and attempt to sync your times to them")
+    Note("  - 'dtdebug': toggle debug mode. Useful to find NPC string or room id to add spots")
 end
 
 ]]>
