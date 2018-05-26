@@ -409,7 +409,6 @@ function OnPluginInstall()
 end
 
 function WindowToggle(name, line, wildcards)
-    Note(window_flag)
     if window_flag == false then
         WindowShow(window_name, true)
         window_flag = true
@@ -535,7 +534,7 @@ end
 
 function EraseWindow()
     movewindow.save_state(window_name)
-    WindowDelete(window_name)
+    WindowShow(window_name, false)
 end
 
 function OnPluginDisable()
@@ -602,10 +601,7 @@ function SyncSend(name, line, wildcards)
 
     if dtsync:len() > 15 or vtsync:len() > 15 then
         local tell_string = "tell " .. wildcards.target .. " " .. dtsync .. " | " .. vtsync
-        local frimble_string = "frimble " .. wildcards.target .. " tells you: " .. dtsync .. " | " .. vtsync
-
         Send(tell_string)
-        Send(frimble_string)
     end
 end
 
