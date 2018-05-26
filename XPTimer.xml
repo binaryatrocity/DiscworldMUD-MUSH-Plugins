@@ -131,8 +131,8 @@ end
 
 
 -- Data
-debug_flag = False
-window_flag = False
+debug_flag = false
+window_flag = false
 
 window_name = "xpwindow_" .. GetPluginID()
 window_info = {}
@@ -409,6 +409,7 @@ function OnPluginInstall()
 end
 
 function WindowToggle(name, line, wildcards)
+    Note(window_flag)
     if window_flag == false then
         WindowShow(window_name, true)
         window_flag = true
@@ -615,7 +616,7 @@ function SyncReceiveTimers(name, line, wildcards)
     for display, clock in string.gmatch(wildcards.dtimes, pattern) do
         for index,spot in ipairs(kill_timers) do
             if spot["display"] == display then 
-                spot["time"] = clock
+                spot["time"] = tonumber(clock)
                 count = count + 1
             end
         end
@@ -623,7 +624,7 @@ function SyncReceiveTimers(name, line, wildcards)
     for display, clock in string.gmatch(wildcards.vtimes, pattern) do
         for index,spot in ipairs(visit_timers) do
             if spot["display"] == display then
-                spot["time"] = clock
+                spot["time"] = tonumber(clock)
                 count = count + 1
             end
         end
