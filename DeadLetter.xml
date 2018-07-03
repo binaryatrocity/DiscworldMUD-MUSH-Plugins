@@ -7,7 +7,7 @@
         language="Lua"
         purpose="Identify the target of Dead Letter missions"
         date_written="2017-05-29"
-        date_modified="2017-05-29"
+        date_modified="2018-05-05"
         save_state="n"
         version="0.1"
         id="77541a5fdc7c032524fb75d6"
@@ -32,20 +32,21 @@
     <script>
         <![CDATA[
 difficult_customer = {
- ["Triad Boss"] = {"Triad Boss", "Bes Pelargic, Medina" },
- ["The Grflx"] = {"The Grflx", "Skund Forest, Large cavern" },
+ ["Triad Boss"] = {"Triad Boss", "Medina, Bes Pelargic" },
+ ["The Grflx"] = {"The Grflx", "Large cavern, Skund Forest" },
  ["Vyrt"] = {"Vyrt", "Ephebe" },
  ["Avalanche Preventore"] = {"Avalanche Preventore", "Endless Halls (say 'Endless Halls' to Hermal of Sandelfon)" },
- ["The Librarian"] = {"The Librarian", "Starts in the Unseen University, wanders (in L-space)" },
+ ["The Librarian"] = {"The Librarian", "Unseen University, wanders (in L-space)" },
  ["Smuggler captain"] = {"Smuggler captain", "Ephebe underground" },
  ["Queen Shelox"] = {"Queen Shelox", "Gloomy Forest" },
  ["The Clown (Ha'pennywise)"] = {"The Clown (Ha'pennywise)", "Genua Sewers" },
  ["Ice giants"] = {"Ice giants", "The Hub" },
  ["T-shop proprietor"] = {"T-shop proprietor", "The Travelling shop" },
+ ["The Proprietor"] = {"T-shop proprietor", "The Travelling shop" },
  ["Bug"] = {"Bug", "Ramtops" },
  ["Thursday"] = {"Thursday", "A Deserted Island (Thursday's Island)" },
- ["Hotan Hwoar Ni"] = {"Hotan Hwoar Ni", "Bes Pelargic, Sum Bing, The Snail, Hotan Hwoar Ni's Rare Armours" },
- ["Security guards"] = {"Security guards", "Bes Pelargic, First Imperial Bank " },
+ ["Hotan Hwoar Ni"] = {"Hotan Hwoar Ni", "Hotan Hwoar Ni's Rare Armours, The Snail, Sum Bing, Bes Pelargic" },
+ ["Security guards"] = {"Security guards", "First Imperial Bank, Bes Pelargic" },
 }
 
 distant_land = {
@@ -71,8 +72,8 @@ distant_land = {
  ["Greig Schwitz"] = {"Greig [Schwitz]","Genua"  },
  ["Noobie"] = {"[Noobie]","Genua"  },
  ["Tfat Chick"] = {"Tfat [Chick]","Genua"  },
- ["Cut Me Own Hand Off Dhblah (Mr CMOHO Dhblah)"] = {"Cut Me Own Hand Off [Dhblah] (Mr CMOHO Dhblah)","Oasis"  },
- ["Miss Pennie Laced"] = {"Miss Pennie [Laced]","Ohulan Cutash"  },
+ ["Cut Me Own Hand Off Dhblah"] = {"Cut Me Own Hand Off [Dhblah]","Oasis"  },
+ ["Miss Pennie Laced"] = {"Miss Pennie [Laced]","Ohulan-Cutash"  },
  ["Berti Boggis"] = {"[Berti] Boggis","Skund Forest, Pekan Ford"  },
  ["The Proprietor"] = {"The Proprietor","A ferry shop, Counterweight Continent"  }
 }
@@ -87,7 +88,7 @@ far_away = {
  ["Martha Headlock"] = {"Martha Headlock","Bad Ass"  },
  ["Mrs Smith"] = {"Mrs Smith","Bad Ass"  },
  ["Cohen the Barbarian"] = {"Cohen the Barbarian","Barbarian camp"  },
- ["Allen Kingfisher"] = {"Allen Kingfisher","Ramtops, Blackglass, Blackglass smithy"  },
+ ["Allen Kingfisher"] = {"Allen Kingfisher","Blackglass, Ramtops"  },
  ["Morchella Esculenta"] = {"Morchella Esculenta","Blackglass, Undead Defence Shop"  },
  ["Emile"] = {"Emile","Bois, pub"  },
  ["Fern Golly"] = {"Fern Golly","Brass Neck, Brightly coloured (toy) stall"  },
@@ -106,7 +107,7 @@ far_away = {
  ["Ptik-ptak-ptoe"] = {"Ptik-ptak-ptoe","Djelibeybi, Hourglass shop"  },
  ["Pugh Alighieri"] = {"Pugh Alighieri","Djelibeybi, Sickle Street, Alcohol shop"  },
  ["Teh-takk-eht"] = {"Teh-takk-eht","Djelibeybi, Temple street"  },
- ["Toohumi"] = {"Toohumi","Djelibeybi, Market Street, Toohumi's Illuminations"  },
+ ["Toohumi"] = {"Toohumi","Toohumi's Illuminations, Market Street, Djelibeybi"  },
  ["Ug Ogg"] = {"Ug Ogg","Djelibeybi, Guards"  },
  ["Wan-tew-iit"] = {"Wan-tew-iit","Djelibeybi, barracks' kitchen"  },
  ["Arms trader"] = {"Arms trader","Djelibeybi Harbour"  },
@@ -133,32 +134,32 @@ far_away = {
  ["SMOH Dybbler"] = {"SMOH Dybbler","Escrow, Mother Dybbler Potion Shop"  },
  ["Trau Mirnicht"] = {"Trau Mirnicht","Escrow, fair"  },
  ["Verkauft Keinfleisch"] = {"Verkauft Keinfleisch","Escrow, The Meat Pie Shoppe, Garlic Way"  },
- ["A generic Charre Bux employee"] = {"A generic Charre Bux employee","Genua, Charre Bux Coffee House"  },
- ["Ayna"] = {"Ayna","Genua, The Magick Boxe"  },
- ["Blloddwyn"] = {"Blloddwyn","Genua, 'Y Crochan Ddu' Tavern"  },
- ["Brittnee"] = {"Brittnee","Genua, Savannah Road"  },
- ["Captain Merreaux Vingian"] = {"Captain Merreaux Vingian","Genua, Musketeers"  },
- ["Cogsworth"] = {"Cogsworth","Genua, Cogsworth's Clocks"  },
- ["David Leatherman"] = {"David Leatherman","Genua, Marketplace"  },
- ["Edna Scum"] = {"Edna Scum","Genua, Pirate Avenue, Scum Bar"  },
- ["Fredd S'Vage"] = {"Fredd S'Vage","Genua, Calypso Street, The Baron's Hand"  },
- ["Harbour Master"] = {"Harbour Master","Genua, Office near docks"  },
- ["Harbour mistress"] = {"Harbour mistress","Genua, underground docks"  },
- ["Hotel Reception"] = {"Hotel Reception","Genua, Hotel"  },
- ["Jolly Roger"] = {"Jolly Roger","Genua, Pirate Avenue, pirate shop"  },
- ["Mamie Olivia"] = {"Mamie Olivia","Genua, Dead Man's Walk"  },
- ["Mr Ray"] = {"Mr Ray","Genua, Tacticus Academy"  },
- ["Mr Myrtle"] = {"Mr Myrtle","Genua, Silver Bells Silversmiths"  },
- ["Myrtle"] = {"Myrtle","Genua, Silver Bells Silversmiths"  },
- ["Mrs Gogol"] = {"Mrs Gogol","Genua, Marketplace"  },
- ["Sno-ball vendor"] = {"Sno-ball vendor","Genua, Lovers' Walk"  },
- ["Spritz Peltanque"] = {"Spritz Peltanque","Genua, The Resting Zombie"  },
- ["Talula"] = {"Talula","Genua, Talula's Tintillating Toys"  },
- ["The shopkeeper"] = {"The shopkeeper","Genua, Chandlery in Genua Avenue"  },
+ ["A generic Charre Bux employee"] = {"A generic Charre Bux employee","Charre Bux Coffee House, Genua"  },
+ ["Ayna"] = {"Ayna","The Magick Boxe, Genua"  },
+ ["Blloddwyn"] = {"Blloddwyn","'Y Crochan Ddu' Tavern, Genua"  },
+ ["Brittnee"] = {"Brittnee","Savannah Road, Genua"  },
+ ["Captain Merreaux Vingian"] = {"Captain Merreaux Vingian","Musketeers, Genua"  },
+ ["Cogsworth"] = {"Cogsworth","Cogsworth's Clocks, Genua"  },
+ ["David Leatherman"] = {"David Leatherman","Marketplace, Genua"  },
+ ["Edna Scum"] = {"Edna Scum","Pirate Avenue, Scum Bar"  },
+ ["Fredd S'Vage"] = {"Fredd S'Vage","Calypso Street, The Baron's Hand, Genua, Genua"  },
+ ["Harbour Master"] = {"Harbour Master","Office near docks, Genua"  },
+ ["Harbour mistress"] = {"Harbour mistress","underground docks, Genua"  },
+ ["Hotel Reception"] = {"Hotel Reception","Hotel, Genua"  },
+ ["Jolly Roger"] = {"Jolly Roger","Pirate Avenue, pirate shop, Genua"  },
+ ["Mamie Olivia"] = {"Mamie Olivia","Dead Man's Walk, Genua"  },
+ ["Mr Ray"] = {"Mr Ray","Tacticus Academy, Genua"  },
+ ["Mr Myrtle"] = {"Mr Myrtle","Silver Bells Silversmiths, Genua"  },
+ ["Myrtle"] = {"Myrtle","Silver Bells Silversmiths, Genua"  },
+ ["Mrs Gogol"] = {"Mrs Gogol","Marketplace, Genua"  },
+ ["Sno-ball vendor"] = {"Sno-ball vendor","Lovers' Walk, Genua"  },
+ ["Spritz Peltanque"] = {"Spritz Peltanque","The Resting Zombie, Genua"  },
+ ["Talula"] = {"Talula","Talula's Tintillating Toys, Genua"  },
+ ["The shopkeeper"] = {"The shopkeeper","Chandlery in Genua Avenue"  },
  ["The tipster"] =  {"The tipster","Genua"  },
- ["Thom Cru'ez"] = {"Thom Cru'ez","Genua, Barracks"  },
- ["Watch clerk"] = {"Watch clerk","Genua, Watch House"  },
- ["Wounded soldier"] = {"Wounded soldier","Genua, Barracks"  },
+ ["Thom Cru'ez"] = {"Thom Cru'ez","Barracks, Genua"  },
+ ["Watch clerk"] = {"Watch clerk","Watch House, Genua"  },
+ ["Wounded soldier"] = {"Wounded soldier","Barracks, Genua"  },
  ["Private Inside Leg"] = {"Private Inside Leg","Klatchian Foreign Legion outpost storage tent"  },
  ["Bestiality Carter"] = {"Bestiality Carter","Lancre Town"  },
  ["Brother Turbil"] = {"Brother Turbil","Lancre Town, lodging house"  },
@@ -174,14 +175,16 @@ far_away = {
  ["Stephan"] = {"Stephan","Mad Wolf, Mad Wolf Furriers"  },
  ["Young Steven"] = {"Young Steven","Mad Wolf, The Hunter's Head"  },
  ["Suhm-wil-deih"] = {"Suhm-wil-deih","Oasis, Fig Stall"  },
- ["Vic"] = {"Vic","Ohulan Cutash, Vic's tannery"  },
+ ["Vic"] = {"Vic","Vic's tannery, Ohulan Cutash"  },
  ["Twoflower the tourist"] = {"Twoflower the tourist","Ohulan-Cutash, Fiddler's Riddle"  },
  ["My poor kidnapped daughter (Beautiful female captive)"] = {"My poor kidnapped daughter","Ramtops, Bandit camp (very dangerous)"  },
  ["Abbot Lobsang"] = {"Abbot Lobsang","Ramtops, Listening Monks Temple"  },
  ["Brother Asap"] = {"Brother Asap","Ramtops, Monks of Cool temple (can be Cool Monks)"  },
  ["Brother Hotpot"] = {"Brother Hotpot","Ramtops, Listening Monks Temple"  },
- ["Sister Bi-Bi Effenne"] = {"Sister Bi-Bi Effenne","Ramtops, Monks of Cool temple (can be Cool Monks)"  },
- ["Sister Ti-Ti Effenne"] = {"Sister Ti-Ti Effenne","Ramtops, Monks of Cool temple (can be Cool Monks)"  },
+ ["Sister Bi-Bi Effenne"] = {"Sister Bi-Bi Effenne","Monks of Cool, Ramtops"  },
+ ["Bi-Bi Effenne"] = {"Sister Bi-Bi Effenne","Cool Monks, Ramtops"  },
+ ["Ti-Ti Effenne"] = {"Sister Ti-Ti Effenne","Cool Monks, Ramtops"  },
+ ["Sister Ti-Ti Effenne"] = {"Sister Ti-Ti Effenne","Monks of Cool, Ramtops"  },
  ["Heinz Blauhimmel"] = {"Heinz Blauhimmel","Razorback, village shop"  },
  ["Lichtenstein"] = {"Lichtenstein","Razorback, The Inn"  },
  ["Mad Gammer Nudity"] = {"Mad Gammer Nudity","Razorback"  },
@@ -203,21 +206,18 @@ far_away = {
  ["Fione mac Feegle"] = {"Fione mac Feegle","Uberwald (Pictsie Barrows)"  },
  ["Abe"] = {"Abe","Unnamed town, graveyard, Uberwald"  },
  ["Innkeeper"] = {"Innkeeper","Unnamed town, Uberwald"  },
- ["Spiegal"] = {"Spiegal","Unnamed town, Ye Olde Weapons Shoppe, Uberwald"  }
+ ["Spiegal"] = {"Spiegal","Ye Olde Weapons Shoppe, Unnamed town, Uberwald"  }
 }
 
 letter_type = ""
 letter_pattern = {}
-
-function DeadLetterSetName(sName, sLine, wildcards)
-   username = wildcards.name 
-end
 
 function DeadLetterSolver(sName, sLine, wildcards)
     letter_pattern = {}
     EnableTrigger("DeadLetterCaptureStart", true)
     EnableTrigger("DeadLetterCaptureEnd", true)
     EnableTrigger("DeadLetterCaptureError", true)
+    EnableTrigger("DeadLetterCaptureCombatError", true)
     Send("read letter")
 end
 
@@ -231,36 +231,38 @@ function DeadLetterStop(sName, sLine, wildcards)
     EnableTrigger("DeadLetterCaptureStart", false)
     EnableTrigger("DeadLetterCaptureEnd", false)
     EnableTrigger("DeadLetterCaptureError", false)
+    EnableTrigger("DeadLetterCaptureCombatError", false)
 
     if(next(letter_pattern)) then
         --Note("Letter is due: " .. wildcards.time)
         DeadLetterSolution()
+        letter_pattern = {}
     end
 end
 
 function DeadLetterSolution()
-    name = "^".. string.gsub(letter_pattern[1], "_", ".") .. "$"
-    place = "^" .. string.gsub(letter_pattern[2], "_", ".")
+    name = rex.new("^".. string.gsub(letter_pattern[1], "_", ".") .. "$")
+    place = rex.new("^" .. string.gsub(letter_pattern[2], "_", "."))
 
     for k,v in pairs(difficult_customer) do
-        if(string.match(k, name)) then
-            if(string.match(v[2], place)) then
+        if(name:match(k)) then
+            if(place:match(v[2])) then
                 Note("[DC] Deliver letter to: " .. v[1] .. " in " .. v[2])
             end
         end
     end
 
     for k,v in pairs(distant_land) do
-        if(string.match(k, name)) then
-            if(string.match(v[2], place)) then
+        if(name:match(k)) then
+            if(place:match(v[2])) then
                 Note("[DL] Deliver letter to: " .. v[1] .. " in " .. v[2])
             end
         end
     end
 
     for k,v in pairs(far_away) do
-        if(string.match(k, name)) then
-            if(string.match(v[2], place)) then
+        if(name:match(k)) then
+            if(place:match(v[2])) then
                 Note("[FA] Deliver letter to: " .. v[1] .. " in " .. v[2])
             end
         end
@@ -299,5 +301,18 @@ end
             sequence="35"
             name="DeadLetterCaptureError"
         ></trigger>
+        <trigger
+            enabled="n"
+            ignore_case="n"
+            keep_evaluating="y"
+            match="^You are too busy fighting to read at the moment\.$"
+            regexp="y"
+            script="DeadLetterStop"
+            sequence="35"
+            name="DeadLetterCaptureCombatError"
+        ></trigger>
     </triggers>
 </muclient>
+<!--
+            match="^Deliver by (?P<time>.+ (\[\w{3}\])?)\."
+-->
