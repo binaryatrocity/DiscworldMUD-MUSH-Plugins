@@ -578,20 +578,37 @@ function SyncSend(name, line, wildcards)
             dtsync = dtsync .. display .. "=" .. time .. ","
         end
     end
-    if dtsync:len() > 14 then
-        dtsync = dtsync:sub(1, dtsync:len()-1) .. "]"
-    else
-        dtsync = dtsync .. "]"
-    end
 
     --
     -- Visit Timers
     --
     local groups = {}
     for index,spot in ipairs(visit_timers) do
-        if spot["time"] ~= 0 then
-            vtsync = vtsync .. spot["display"] .. "=" .. spot["time"] .. ","
+        if spot["group"] then
+            if not groups[spot["display"]] then
+                groups[spot["display"]] = spot["time"]
+            else
+                if groups[spot["display"]] < spot["time"] then
+                    groups[spot["display"]] = spot["time"]
+                end
+            end
+        else
+            if spot["time"] ~= 0 then
+                vtsync = vtsync .. spot["display"] .. "=" .. spot["time"] .. ","
+            end
         end
+    end
+    for display,time in pairs(groups) do
+        if time ~= 0 then
+            vtsync = vtsync .. display .. "=" .. time .. ","
+        end
+    end
+
+    -- Remove trailing commas if needed
+    if dtsync:len() > 14 then
+        dtsync = dtsync:sub(1, dtsync:len()-1) .. "]"
+    else
+        dtsync = dtsync .. "]"
     end
     if vtsync:len() > 14 then
         vtsync = vtsync:sub(1, vtsync:len()-1) .. "]"
@@ -599,6 +616,7 @@ function SyncSend(name, line, wildcards)
         vtsync = vtsync .. "]"
     end
 
+    -- If we have values beyond boilerplate-length, send sync
     if dtsync:len() > 15 or vtsync:len() > 15 then
         local tell_string = "tell " .. wildcards.target .. " " .. dtsync .. " | " .. vtsync
         Send(tell_string)
@@ -612,16 +630,20 @@ function SyncReceiveTimers(name, line, wildcards)
     for display, clock in string.gmatch(wildcards.dtimes, pattern) do
         for index,spot in ipairs(kill_timers) do
             if spot["display"] == display then 
-                spot["time"] = tonumber(clock)
-                count = count + 1
+                if tonumber(clock) > spot["time"]
+                    spot["time"] = tonumber(clock)
+                    count = count + 1
+                end
             end
         end
     end
     for display, clock in string.gmatch(wildcards.vtimes, pattern) do
         for index,spot in ipairs(visit_timers) do
             if spot["display"] == display then
-                spot["time"] = tonumber(clock)
-                count = count + 1
+                if tonumber(clock) > spot["time"] then
+                    spot["time"] = tonumber(clock)
+                    count = count + 1
+                end
             end
         end
     end
