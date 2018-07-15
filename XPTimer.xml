@@ -630,7 +630,7 @@ function SyncReceiveTimers(name, line, wildcards)
     for display, clock in string.gmatch(wildcards.dtimes, pattern) do
         for index,spot in ipairs(kill_timers) do
             if spot["display"] == display then 
-                if tonumber(clock) > spot["time"]
+                if tonumber(clock) > spot["time"] then
                     spot["time"] = tonumber(clock)
                     count = count + 1
                 end
