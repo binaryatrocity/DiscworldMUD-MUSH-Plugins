@@ -242,7 +242,11 @@ end
 
 function DeadLetterSolution()
     name = rex.new("^".. string.gsub(letter_pattern[1], "_", ".") .. "$")
-    place = rex.new("^" .. string.gsub(letter_pattern[2], "_", "."))
+    if(letter_pattern[2] != nil) then
+        place = rex.new("^" .. string.gsub(letter_pattern[2], "_", "."))
+    else
+        place = nil
+    end
 
     for k,v in pairs(difficult_customer) do
         if(name:match(k)) then
@@ -262,6 +266,9 @@ function DeadLetterSolution()
 
     for k,v in pairs(far_away) do
         if(name:match(k)) then
+            if(place == nil) then
+                Note("[FA] Deliver letter to: " .. v[1] .. " in " .. v[2])
+            end
             if(place:match(v[2])) then
                 Note("[FA] Deliver letter to: " .. v[1] .. " in " .. v[2])
             end
