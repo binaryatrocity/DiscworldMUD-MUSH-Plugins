@@ -135,6 +135,7 @@ debug_flag = false
 window_flag = false
 
 window_name = "xpwindow_" .. GetPluginID()
+spot_count = 21
 window_info = {}
 
 last_room = {
@@ -200,6 +201,9 @@ visit_timers = {
     [14] = initSpot("95ede200c782fdb09239a2db85dd9f8775922f86", "parades", true),
 }
 
+metatbl = { __lt = function (k1, k2) print (k1["time"]); return k1["time"] > k2["time"] end }
+for _, v in ipairs(kill_timers) do setmetatable(v, mt) end
+for _, v in ipairs(visit_timers) do setmetatable(v, mt) end
 
 
 -- XPTimer
@@ -279,8 +283,6 @@ function SpotReset(name, line, wildcards)
     DrawWindow()
 end
 
-
-
 -- Output
 function DeathTimers()
     local current_time = os.time()
@@ -299,7 +301,7 @@ function DeathTimers()
                 end
             else
                 if spot["time"] == 0 then
-                    Note(" - (Unseen)\t" .. spot["display"])
+                    Note(" - (???)\t" .. spot["display"])
                 else
                     difference = math.floor((current_time - spot["time"]) + 0.5)
                     local mins = math.floor(difference/60)
@@ -313,7 +315,7 @@ function DeathTimers()
         end
         for display,time in pairs(groups) do
             if time == 0 then
-                Note(" - (Unseen)\t" .. display)
+                Note(" - (???)\t" .. display)
             else
                 difference = math.floor((current_time - time) + 0.5)
                 local mins = math.floor(difference/60)
@@ -352,7 +354,7 @@ function GroupSend(name, line, wildcards)
                 end
             else
                 if spot["time"] == 0 then
-                    output = output .. spot["display"] .. ": Unseen | "
+                    output = output .. spot["display"] .. ": ??? | "
                 else
                     difference = math.floor((current_time - spot["time"]) + 0.5)
                     local mins = math.floor(difference/60)
@@ -362,7 +364,7 @@ function GroupSend(name, line, wildcards)
         end
         for display,time in pairs(groups) do
             if time == 0 then
-                output = output .. display .. ": Unseen | "
+                output = output .. display .. ": ??? | "
             else
                 difference = math.floor((current_time - time) + 0.5)
                 local mins = math.floor(difference/60)
@@ -387,9 +389,14 @@ end
 --
 -- Miniwindow nonsense
 --
-WIN_WIDTH, WIN_HEIGHT = 190, 460
+WIN_WIDTH, WIN_HEIGHT = 165, 460
 function OnPluginInstall()
     window_info = movewindow.install(window_name, miniwin.pos_center_all, 0)
+
+    --local line_height = WindowFontInfo(window_name, "f", 1)
+    --WIN_HEIGHT = line_height * (spot_count + 8)
+    
+
     WindowCreate(
         window_name,
         window_info.window_left,
@@ -403,7 +410,7 @@ function OnPluginInstall()
     movewindow.add_drag_handler(window_name, 0, 0, 0, 0, miniwin.cursor_both_arrow)
     movewindow.save_state(window_name)
 
-    WindowFont(window_name, "f", "Trebuchet MS", 8, true, false, false, false)
+    WindowFont(window_name, "f", "Consolas", 8, true, false, false, false)
 
     DrawWindow()
 end
@@ -432,20 +439,22 @@ end
 
 function DrawTimersOnWindow()
     local num_lines = -1
-    local line_height = WindowFontInfo(window_name, "f", 1) - 2
+    local line_height = WindowFontInfo(window_name, "f", 1)
 
     local current_time = os.time()
     local difference = os.time()
 
     function PrintTimerTable(timers)
         local groups = {}
+        -- table.sort(timers)
+        -- local fns = kill_timers[1] < kill_timers[2]
 
         function DrawLine(time, display)
             num_lines = num_lines + 1
-            local height = (num_lines * line_height)
+            local height = (num_lines * line_height) + 4
 
             local length = 0
-            local spaces_needed = 12
+            local spaces_needed = 5
 
             if type(time) == "number" then
                 if time == 0 then
@@ -471,7 +480,16 @@ function DrawTimersOnWindow()
             output = output .. ")"
 
             WindowText(window_name, "f", output, 5, height, 0, 0, ColourNameToRGB("white"), false)
-            WindowText(window_name, "f", display, 85, height, 0, 0, ColourNameToRGB("white"), false)
+
+            if type(time) == "number" and time > 70 then
+                WindowText(window_name, "f", display, 60, height, 0, 0, ColourNameToRGB("white"), false)
+            elseif type(time) == "number" and time > 50 then
+                WindowText(window_name, "f", display, 60, height, 0, 0, ColourNameToRGB("red"), false)
+            elseif type(time) == "number" and time > 30 then
+                WindowText(window_name, "f", display, 60, height, 0, 0, ColourNameToRGB("yellow"), false)
+            else
+                WindowText(window_name, "f", display, 60, height, 0, 0, ColourNameToRGB("white"), false)
+            end
         end
 
         for index,spot in ipairs(timers) do
@@ -485,20 +503,22 @@ function DrawTimersOnWindow()
                 end
             else
                 if spot["time"] == 0 then
-                    DrawLine("Unseen", spot["display"])
+                    DrawLine("???", spot["display"])
                 else
                     difference = math.floor((current_time - spot["time"]) + 0.5)
                     local mins = math.floor(difference/60)
+                    if mins > 99 then mins = 99 end
                     DrawLine(mins, spot["display"])
                 end
             end
         end
         for display,time in pairs(groups) do
             if time == 0 then
-                DrawLine("Unseen", display)
+                DrawLine("???", display)
             else
                 difference = math.floor((current_time - time) + 0.5)
                 local mins = math.floor(difference/60)
+                if mins > 99 then mins = 99 end
                 DrawLine(mins, display)
             end
         end
@@ -512,7 +532,7 @@ function DrawTimersOnWindow()
 
     -- Note(".:: Death Timers ::.")
     num_lines = num_lines +1
-    local output = ".:: Death Timers ::."
+    local output = "-- [ Death Timers ] -- "
     local height = (num_lines * line_height)
     WindowText(window_name, "f", output, 5, height, 0, 0, ColourNameToRGB("white"), false)
     PrintTimerTable(kill_timers)
@@ -526,7 +546,7 @@ function DrawTimersOnWindow()
 
     -- Note("\n.:: Visit Timers ::.")
     num_lines = num_lines +1
-    local output = ".:: Visit Timers ::."
+    local output = " -- [ Visit Timers ] -- "
     local height = (num_lines * line_height)
     WindowText(window_name, "f", output, 5, height, 0, 0, ColourNameToRGB("white"), false)
     PrintTimerTable(visit_timers)
