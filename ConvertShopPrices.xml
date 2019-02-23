@@ -30,8 +30,9 @@
 <triggers>
   <trigger
    enabled="y"
-   match="^   \w: (.*) for (.*) \(\w+ left\)\.$"
+   match="^   (\w): (.*) for (.*) \((\w+) left\)\.$"
    regexp="y"
+   omit_from_output="y"
    send_to="12"
    sequence="100"
   >
@@ -70,7 +71,7 @@ function parse_price(data)
 end
 
 if GetVariable("ConvertShopPrices") == "1" then
-  Note('A$' .. parse_price("%2"))
+  Note('%1: %2 for %3 (%4 left). [' .. parse_price("%3") .. ']')
 end</send>
   </trigger>
 </triggers>
