@@ -71,7 +71,7 @@ function parse_price(data)
 end
 
 if GetVariable("ConvertShopPrices") == "1" then
-  Note('%1: %2 for %3 (%4 left). [' .. parse_price("%3") .. ']')
+  Note('%1: %2 for %3 (%4 left). [A$' .. parse_price("%3") .. ']')
 end</send>
   </trigger>
 </triggers>
