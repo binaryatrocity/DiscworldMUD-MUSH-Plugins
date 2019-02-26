@@ -30,14 +30,15 @@
 <triggers>
   <trigger
    enabled="y"
-   match="^   (\w): (.*) for (.*) \((\w+) left\)\.$"
+   match="^   (\w{1,2}): (.*) for (.*) \(([\w-]+) left\)\.$"
    regexp="y"
    omit_from_output="y"
    send_to="12"
    sequence="100"
+   name="convertshopprice"
   >
   <send>function w2am(data)
-  return data / 400
+      return string.format("%.2f", (data / 400));
 end
 
 function parse_price(data)
@@ -46,18 +47,19 @@ function parse_price(data)
   if string.find(data, 'L') ~= nil then
     -- Lancre
     if string.find(data, 'Lp') then
-      local pe = string.match(data, 'Lp (%d)') * 12
+      local pe = string.match(data, 'Lp (%d+)') * 12
       total = w2am(pe)
     elseif string.find(data, 'Ls') then
-      local sh,pe = string.match(data, 'Ls (%d)|(%d)')
+      local sh,pe = string.match(data, 'Ls (%d+)|(%d+)')
       total = w2am((sh * 144)+(pe * 12))
     elseif string.find(data, 'LC') then
-      local cr,sh,pe = string.match(data, 'LC (%d)|([%d-])|([%d-])')
+      local cr,sh,pe = string.match(data, 'LC (%d+)|([%d-]+)|([%d-]+)')
       sh = tonumber(sh) or 0
       pe = tonumber(pe) or 0
       total = w2am((cr * 1728)+(sh * 144)+(pe * 12))
     elseif string.find(data, 'LSov') then
-      local so,cr,sh,pe = string.match(data, 'LSov (%d)|([%d-])|([%d-])|([%d-])')
+      local so,cr,sh,pe = string.match(data, 'LSov (%d+)|([%d-]+)|([%d-]+)|([%d-]+)')
+      print(so, cr, sh, pe)
       cr = tonumber(cr) or 0
       sh = tonumber(sh) or 0
       pe = tonumber(pe) or 0
@@ -73,13 +75,18 @@ function parse_price(data)
   elseif string.find(data, 'G') ~= nil then
     -- Genua
     if string.find(data, 'Gl') then
-      local li,ce = string.match(data, "(%d),(%d)Gl")
+      local li,ce = string.match(data, "(%d+),(%d+)Gl")
+      li = tonumber(li) or 0
+      ce = tonumber(ce) or 0
       total = w2am((li * 300)+(ce * 3))
     elseif string.find(data, 'Gf') then
-      local fo,li,ce = string.match(data, "(%d),(%d),(%d)Gf")
+      local fo,li,ce = string.match(data, "(%d+),(%d+),(%d+)Gf")
       total = w2am((fo * 3000)+(li * 300)+(ce * 3))
     elseif string.find(data, 'Gd') then
-      local du,fo,li,ce = string.match(data, "(%d),(%d),(%d),(%d)Gd")
+      local du,fo,li,ce = string.match(data, "(%d+),(%d+),(%d+),(%d+)Gd")
+      fo = tonumber(fo) or 0
+      li = tonumber(li) or 0
+      ce =  tonumber(ce) or 0
       total = w2am((du * 30000)+(fo * 3000)+(li * 300)+(ce * 3))
     end
   elseif string.find(data, 'de') ~= nil or string.find(data, 'S') ~= nil or string.find(data, 'M') ~= nil then
@@ -101,10 +108,6 @@ function parse_price(data)
   end
 
   return total
-end
-
-if GetVariable("ConvertShopPrices") == "1" then
-  Note('%1: %2 for %3 (%4 left). [A$' .. parse_price("%3") .. ']')
 end</send>
   </trigger>
 </triggers>
@@ -118,7 +121,7 @@ end</send>
    send_to="12"
    sequence="100"
   >
-  <send>SetVariable("ConvertShopPrices", 1)
+  <send>EnableTrigger("convertshopprice", true)
 Note("Will now display converted shop prices.")</send>
   </alias>
   <alias
@@ -127,7 +130,7 @@ Note("Will now display converted shop prices.")</send>
    send_to="12"
    sequence="100"
   >
-  <send>SetVariable("ConvertShopPrices", 0)
+  <send>EnableTrigger("convertshopprice", false)
 Note("Will no longer show converted prices.")</send>
   </alias>
 </aliases>
