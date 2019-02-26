@@ -37,8 +37,9 @@
    sequence="100"
    name="convertshopprice"
   >
-  <send>function w2am(data)
-      return string.format("%.2f", (data / 400));
+  <send>
+function w2am(data)
+      return string.format("%.2f", (data / 400))
 end
 
 function parse_price(data)
@@ -97,8 +98,8 @@ function parse_price(data)
     total = w2am(m+s+de)
   elseif string.find(data, 'DjToon') ~= nil then
     -- Djelibeybi
-    local tn = (string.match(data, "DjToon %d+%.(%d+)") or 0) * 2
-    local pt = (string.match(data, "DjToon (%d+)%.%d+") or 0) * 200
+    local pt = (string.match(data, "DjToon %d+%.(%d+)") or 0) * 2
+    local tn = (string.match(data, "DjToon (%d+)%.%d+") or 0) * 200
     total = w2am(pt+tn)
   elseif string.find(data, 's') ~= nil or string.find(data, 'Rh') ~= nil then
     -- Bes Pelargic
@@ -108,7 +109,10 @@ function parse_price(data)
   end
 
   return total
-end</send>
+end
+
+Note("   %1: %2 for %3 (%4 left). [A$" .. parse_price("%3") .. "]")
+  </send>
   </trigger>
 </triggers>
 
