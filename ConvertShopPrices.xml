@@ -105,6 +105,10 @@ function parse_price(data)
       li = tonumber(li) or 0
       ce =  tonumber(ce) or 0
       total = w2am((du * 30000)+(fo * 3000)+(li * 300)+(ce * 3))
+     elseif string.find(data, 'Gc') then
+      local ce = string.match(data, "(%d+)Gc")
+      ce = tonumber(ce) or 0
+      total = w2am(ce * 3)
     end
   elseif string.find(data, 'de') ~= nil or string.find(data, 'S') ~= nil or string.find(data, 'M') ~= nil then
     -- Ephebe
