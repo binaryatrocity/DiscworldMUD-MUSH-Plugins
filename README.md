@@ -10,6 +10,7 @@ This plugin displays the time since you last 'checked' various XP hotspots. Time
 * 'dtwindow' toggles a mini-window displaying timer info, can click and drag to move it. **\*\*experimental\*\***
 * 'dtsync <player_name>' will send your timers to another player using the plugin and update theirs. **\*\*experimental\*\***
 * 'help deathtimer' will display this info in-client
+* syncs back and forth with the Tintin++ plugin!
   
 ## DeadLetter.xml
 This plugin displays the full name and location of your dead letter target. Currently works for Difficult Customer, Distant Land, and Far Away letters.
